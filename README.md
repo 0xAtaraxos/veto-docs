@@ -9,7 +9,7 @@ Official documentation for [hoodstar.fun](https://hoodstar.fun) — the meme coi
 - `introduction/` — how it works, $STAR token, links, FAQ
 - `guides/` — connect wallet, launch a token, trading, creator rewards
 - `protocol/` — bonding curve math, graduation, fees, security model
-- `developers/` — chain/contract overview, `@hoodstar/sdk` guide, contract reference
+- `developers/` — chain/contract overview, `@hoodstudio/hoodstar-sdk` guide, contract reference
 - `legal/` — terms, privacy, risk disclosure
 - `logo/` — brand assets (gold star, `#F0B90B`)
 
