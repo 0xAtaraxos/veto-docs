@@ -4,9 +4,9 @@
   "name": "hoodstar.fun",
   "description": "hoodstar.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
   "colors": {
-    "primary": "#F0B90B",
-    "light": "#FFD75E",
-    "dark": "#F0B90B"
+    "primary": "#A7D106",
+    "light": "#CCFF07",
+    "dark": "#A7D106"
   },
   "logo": {
     "light": "/logo/hoodstar-wordmark-black.svg",
