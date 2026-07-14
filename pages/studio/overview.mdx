@@ -1,0 +1,49 @@
+---
+title: "Earning as a Creator"
+description: "The creator-reward surface in your Liport profile."
+icon: "gauge"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+If you launch coins on Liport, you earn on every trade. Curve and post-graduation. You claim from your profile page, in the **Creator Rewards** section.
+
+## Who sees this section
+
+Anyone whose connected wallet has deployed at least one coin on Liport. If you have not launched anything yet, the section is hidden. Launch a coin and it appears.
+
+## What is in it
+
+<CardGroup cols={2}>
+  <Card title="Total earnings" icon="gauge">
+    Quick summary of total claimable and lifetime earnings.
+  </Card>
+  <Card title="Claim fees and rewards" icon="money-bill-transfer" href="/studio/claiming">
+    Pull trading fees and creator rewards into your wallet, per coin or in batch.
+  </Card>
+  <Card title="PnL tracking" icon="chart-line" href="/studio/pnl-tracking">
+    Per-coin profit and loss, with shareable cards.
+  </Card>
+</CardGroup>
+
+## Per-coin view
+
+For each coin you launched, the section shows:
+
+| Field | What it shows |
+| --- | --- |
+| Coin | Logo, name, symbol |
+| Status | On curve / Graduated |
+| Claimable | Trading fees plus creator rewards ready to claim |
+| Lifetime | Total earned from this coin |
+| Actions | Claim, view token page, share PnL |
+
+## Batch claim
+
+If you have many coins with small balances, batch claim rolls multiple claims into as few transactions as possible. Your wallet may show one or more approval prompts depending on the wallet.
+
+## Visibility
+
+Creator reward data is private to your connected wallet. Other people cannot see your unclaimed balances or lifetime totals. Once you claim, the SOL movement is on-chain. Liport does not publish a top earners leaderboard.
+
+If you want to share a single launch's performance, use **Share PnL** on a coin row to generate a card with just that coin's numbers.

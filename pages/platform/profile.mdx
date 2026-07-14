@@ -1,0 +1,51 @@
+---
+title: "Profile"
+description: "Your Liport identity. What it shows, how to edit it, where creator rewards live."
+icon: "user"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+Every wallet that has interacted with Liport has a public profile at:
+
+```
+https://liport.fun/profile/<wallet-address>
+```
+
+## What is on a profile
+
+### Header
+
+- Avatar (uploaded or auto-generated)
+- Display name (optional, falls back to a shortened wallet address)
+- Wallet address with a copy button
+- Solscan link
+- SOL balance
+
+### Coins created
+
+A grid of coins launched from this wallet, rendered with the same card format as Discover. Creator claim actions show up on the creator's own profile.
+
+### Creator rewards
+
+Only visible on your own profile. This is where you see and claim:
+
+- Trading fees from each coin you launched
+- Creator rewards
+- Lifetime earnings and PnL
+
+See [Earning as a Creator](/studio/overview) for the full guide.
+
+## Editing your profile
+
+On your own profile, hit **Edit** to update:
+
+- Display name
+- Avatar image
+- Bio
+
+Profile data is stored on the server (some fields also in browser local storage) and tied to the wallet that signed the edit.
+
+## Visibility
+
+Profiles are public. Trade history and launches come from public on-chain data, so they cannot be hidden. The metadata you control (display name, bio) can be removed by editing it out.

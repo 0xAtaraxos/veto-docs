@@ -1,0 +1,50 @@
+---
+title: "Claiming"
+description: "How to claim trading fees and creator rewards from coins you launched."
+icon: "money-bill-transfer"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+If you launched a coin, two streams of SOL accrue to you on-chain. Both are claimed from the same place in your profile, with the same action.
+
+## What you can claim
+
+| Stream | Source | When it accrues |
+| --- | --- | --- |
+| **Trading fees** | 0.2% creator slice of every curve trade | While the coin is on its bonding curve |
+| **Creator rewards** | 0.05% creator fee on every Raydium CPMM swap | After graduation, on every CPMM swap |
+
+Accrual is automatic. The claim button just moves what is yours into your spendable wallet balance.
+
+## How to claim
+
+<Steps>
+  <Step title="Open your profile">
+    Go to [liport.fun](https://liport.fun), open your profile, and scroll to the **Creator Rewards** section. Make sure you are connected with the wallet that launched the coin.
+  </Step>
+
+  <Step title="Find the coin">
+    Each row shows the current claimable amount. Coins with zero claimable sink to the bottom.
+  </Step>
+
+  <Step title="Preview and claim">
+    Hit **Claim** on a row. The preview shows the claimable amount, estimated gas, and the net SOL you will receive. Approve in your wallet. The claim lands in a few seconds.
+  </Step>
+
+  <Step title="Or batch claim">
+    Hit the batch claim button at the top to claim across many coins at once. Liport bundles them into as few transactions as possible. Big portfolios may need 2 or 3 signatures.
+  </Step>
+</Steps>
+
+## Cadence
+
+Unclaimed balances do not expire. The only reason to claim sooner is to free up capital you want to redeploy.
+
+## Failed claims
+
+A claim can fail for these reasons:
+
+- Not enough SOL to pay gas. Top up a small amount and retry.
+- Network congestion. Wait a moment and retry.
+- The claim account has not received its first accrual yet (it will not show as claimable in that case).

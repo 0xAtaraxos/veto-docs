@@ -1,0 +1,45 @@
+---
+title: "FAQ"
+description: "Quick answers to the questions we hear most often."
+icon: "circle-question"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+<AccordionGroup>
+  <Accordion title="What is Liport?">
+    A Solana launchpad. You connect a wallet, optionally launch a token on a bonding curve, and trade what other people launch. Once a curve fills up, the token moves to a Raydium pool and trades like any other Solana token.
+  </Accordion>
+
+  <Accordion title="Which wallets work?">
+    Any wallet that follows the Solana Wallet Standard. Phantom, Backpack, Solflare and Glow are the ones we test against. Mobile works through the in-wallet browser.
+  </Accordion>
+
+  <Accordion title="Does Liport hold my funds?">
+    No. Liport is non-custodial. Your keys stay in your wallet and the site can only do what you sign for.
+  </Accordion>
+
+  <Accordion title="How much does it cost to launch a token?">
+    A small amount of SOL to cover Solana account rent and compute. Liport does not charge a flat platform fee on top of that. See the [Fees](/concepts/fees) page for the breakdown.
+  </Accordion>
+
+  <Accordion title="When does a token graduate to Raydium?">
+    When net SOL inflow into the curve reaches 85 SOL. The migration runs in a single on-chain flow. No manual step. See [Graduation](/concepts/graduation).
+  </Accordion>
+
+  <Accordion title="Do creators earn anything?">
+    Yes. Creators earn a share of every trade on their coin, before and after graduation. You can claim from the Studio. See [Earning as a Creator](/studio/overview).
+  </Accordion>
+
+  <Accordion title="Is Liport available everywhere?">
+    No. The Terms exclude residents of the United States, the United Kingdom and other restricted regions. It is on you to know if you are eligible. See [Risk Disclosure](/legal/risk-disclosure).
+  </Accordion>
+
+  <Accordion title="Where do I get support?">
+    The Discord support channel. The Liport team will not DM you first and will never ask for your seed phrase. See [Official Links](/overview/official-links).
+  </Accordion>
+
+  <Accordion title="Is there an API?">
+    Liport doesn't expose a public API at this time. On-chain data lives on Solana — anyone can read it via standard RPC, Helius, or Raydium.
+  </Accordion>
+</AccordionGroup>

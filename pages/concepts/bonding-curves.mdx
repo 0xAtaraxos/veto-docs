@@ -1,0 +1,52 @@
+---
+title: "Bonding Curves"
+description: "How Liport tokens are priced before they graduate to a liquidity pool."
+icon: "chart-line"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+A bonding curve sets the price from a formula based on how much SOL is in the pool. No order book, no market maker.
+
+Every token on Liport launches with the same curve parameters.
+
+## The formula
+
+Liport uses Raydium's LaunchLab constant product curve. At any moment:
+
+```
+price â‰ˆ SOL reserve / token reserve
+```
+
+Buys add SOL and remove tokens, so price goes up. Sells do the opposite. The curve starts cheap and gets more expensive as SOL flows in.
+
+## What is fixed at launch
+
+| Parameter | Value |
+| --- | --- |
+| Graduation target | 85 SOL of net inflow |
+| Raydium protocol fee | 0.25% |
+| Liport platform fee | 0.55% |
+| Creator fee rate | 0.20% |
+| Supply locked by the curve | Fixed at launch |
+
+The live curve state for any token is readable on-chain. The token page also shows a graduation progress bar.
+
+## Slippage
+
+Slippage on a bonding curve is not the same as AMM slippage. There is no other liquidity to front-run you. Two things move your fill:
+
+1. **Other trades that land before yours** in the same block.
+2. **Your own trade size** relative to the current reserve.
+
+The trade widget quotes an expected receive amount from the curve state at the moment of the quote. The on-chain program enforces a minimum receive set by your slippage tolerance.
+
+## Pricing intuition
+
+- Early on the curve, small SOL buys move the price a lot.
+- As the curve fills, each extra SOL buys fewer tokens.
+- Near the graduation threshold, prices line up with the post-migration pool price.
+
+## What ends the curve
+
+One thing: net inflow reaching **85 SOL**. After that the curve account closes and the token moves on. See [Graduation](/concepts/graduation).

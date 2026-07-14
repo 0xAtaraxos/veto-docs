@@ -1,0 +1,62 @@
+---
+title: "Quick Start"
+description: "Go from zero to your first Liport trade in five minutes."
+icon: "rocket"
+---
+
+import { Card, CardGroup, Steps, Step, Accordion, AccordionGroup, Note, Tip, Warning, Info, Check } from '../../components/mintlify-shims'
+
+Before you start, you need a Solana wallet (Phantom, Backpack, Solflare or any Wallet Standard wallet) with a small amount of SOL for network fees.
+
+<Steps>
+  <Step title="Connect your wallet">
+    Open [liport.fun](https://liport.fun) and hit **Connect Wallet** in the top right. Pick your wallet, approve, and sign the short message Liport asks for. The signature is free, off-chain, and only proves the wallet is yours. It does not move any funds.
+
+    More detail in [Connect Wallet](/platform/connect-wallet).
+  </Step>
+
+  <Step title="Find a token">
+    Use **Discover** or the top nav coins list. The filters all look at the same set of coins from different angles:
+
+    - **New** for fresh launches
+    - **Trending** for activity over a rolling window
+    - **Movers** for biggest price swings
+    - **Last Traded**, **Market Cap**, **Featured**, **Explore**, **Recommended** for the rest
+
+    Click a card to open the token page.
+  </Step>
+
+  <Step title="Make your first trade">
+    On a token page you get a chart, a buy/sell box, and a live trade feed.
+
+    1. Pick **Buy** or **Sell**.
+    2. Enter an amount in SOL or in the token.
+    3. Check the expected output (slippage and fees included).
+    4. Hit **Swap** and approve in your wallet.
+
+    The widget routes through the bonding curve or the Raydium pool automatically, depending on whether the token has graduated yet.
+  </Step>
+
+  <Step title="(Optional) Launch a token">
+    Hit **Create** in the top nav and fill in:
+
+    - Name and symbol
+    - A square logo (PNG or JPG)
+    - Description and any social links
+    - An optional first buy in SOL
+
+    Approve the single transaction. Your token shows up on Discover in seconds and the link is ready to share.
+
+    Full guide: [Launching a Token](/platform/launching-a-token).
+  </Step>
+
+  <Step title="(Optional) Claim earnings">
+    If you launched a coin and it has trade volume, open your **Profile**. The Creator Rewards section lists what you can claim per coin. Claim one at a time or all at once.
+
+    Full guide: [Earning as a Creator](/studio/overview).
+  </Step>
+</Steps>
+
+<Tip>
+Keep a few tenths of a SOL on hand for transaction fees. Almost every action on Liport costs a tiny bit of network gas.
+</Tip>
