@@ -10,7 +10,7 @@ hoodstar.fun has one of the simplest fee schedules in the launchpad space. Every
 
 | Action | Fee |
 | --- | --- |
-| Launch a token | **Free** (gas only) |
+| Launch a token | **0.001 ETH** flat, plus gas |
 | Buy or sell on the bonding curve | **1%** of the ETH amount |
 | Graduation / migration | **Free** (permissionless, gas only) |
 | Trade on Uniswap after graduation | **1%** pool fee tier (standard Uniswap mechanics) |
@@ -29,22 +29,22 @@ Taken in ETH on every buy and sell, and split:
   </Card>
 </CardGroup>
 
-Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Claim functions are callable by anyone, but funds only ever go to the registered recipient (the creator's fee address, or the treasury).
+Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Creator fees can be claimed by the fee recipient themselves or triggered by the platform's claimer service (which pays out to recipients in batches — the money always goes to the recipient, never to whoever triggers the claim). Protocol fees can only be claimed by the treasury.
 
 <Info>
-  Fee rates are **immutable**: 0.7% + 0.3% = 1%, fixed forever when the contract was deployed. There is no function to change them, not even for the protocol owner. (A 5% total cap was additionally enforced at construction.)
+  **A token's fee rates are frozen the moment it launches.** The platform maintains a global fee configuration (currently 0.7% + 0.3% = 1%), and each new token takes a permanent snapshot of it at creation — no one, not even the protocol owner, can change the fees of a token that already exists. The global configuration can be tuned for *future* launches, within hard caps baked into the contract: at most 5% total trade fee and at most 0.1 ETH creation fee.
 </Info>
 
 ## After graduation: Uniswap v3 pool fees
 
-Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity, which is the position locked in the FeeLocker vault. Anyone can trigger a fee collection, which splits the harvest:
+Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity, which is the position locked in the FeeLocker vault. The token's fee recipient, the treasury, or the platform's claimer service can trigger a fee collection, which splits the harvest:
 
 | Recipient | Share |
 | --- | --- |
 | Token creator | 30% |
 | Protocol treasury | 70% |
 
-This split is immutable and, by construction, always identical to the bonding-curve fee ratio: the FeeLocker derives its share from the launchpad's fixed 0.7%/0.3% split at deployment, so curve fees and post-graduation fees can never drift apart.
+Like the trade fee, this split is snapshotted into the token at launch and can never change for that token afterwards — every migrated pool keeps paying out at the terms that were advertised on its launch day.
 
 ## Gas
 

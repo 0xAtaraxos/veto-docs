@@ -37,7 +37,7 @@ Three contracts run the whole protocol:
 
 ```mermaid
 flowchart LR
-    Creator -- "createToken()" --> LP[HoodLaunchpad]
+    Creator -- "createToken()" --> LP[HoodstarDotFun]
     Trader -- "buy / sell" --> LP
     LP -- deploys --> T["HoodToken (ERC-20 + permit)"]
     LP -- "migrate() after graduation" --> UNI["Uniswap v3 pool (1% tier)"]
@@ -47,20 +47,20 @@ flowchart LR
 
 | Contract | Role |
 | --- | --- |
-| **HoodLaunchpad** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
+| **HoodstarDotFun** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
 | **HoodToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
-| **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees 30% creator / 70% treasury (mirrors the curve fee ratio). |
+| **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
 
 Only the launchpad address is needed to integrate. The FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
 
 ## Contract addresses
 
-Live on mainnet since block 9,651,439 (2026-07-14), source-verified on Blockscout:
+Live on mainnet since block 9,824,773 (2026-07-14), source-verified on Blockscout:
 
 | Contract | Mainnet (4663) |
 | --- | --- |
-| HoodLaunchpad | [`0x46476743520DCEE36919D8a826F7f3D82c65c1F0`](https://robinhoodchain.blockscout.com/address/0x46476743520DCEE36919D8a826F7f3D82c65c1F0) |
-| FeeLocker | [`0x9d86E293CB8C033694F21A7c1fA63e97Dd2f98de`](https://robinhoodchain.blockscout.com/address/0x9d86E293CB8C033694F21A7c1fA63e97Dd2f98de) |
+| HoodstarDotFun | [`0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A`](https://robinhoodchain.blockscout.com/address/0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A) |
+| FeeLocker | [`0x98f721ca716214c425DCF9D7c098A054869aa85E`](https://robinhoodchain.blockscout.com/address/0x98f721ca716214c425DCF9D7c098A054869aa85E) |
 
 <Note>
   There is no testnet deployment: Uniswap v3 is not deployed on Robinhood Chain testnet, which the protocol depends on for graduation. Develop against a local Anvil fork of mainnet instead.
@@ -83,7 +83,10 @@ SALE_SUPPLY      =   793_100_000 × 1e18   // sold on the curve
 POOL_SUPPLY      =   206_900_000 × 1e18   // reserved for Uniswap LP
 VIRTUAL_TOKEN_0  = 1_073_000_000 × 1e18   // initial virtual token reserve
 virtualEth0      = 1.6 ETH                // initial virtual ETH reserve (deploy parameter)
-Trade fee        = 100 bps (70 protocol / 30 creator), immutable, no setter
-LP fee split     = 3000 bps creator share, derived from the trade-fee ratio
+Trade fee        = 100 bps (70 protocol / 30 creator)  // current global config
+LP fee split     = 3000 bps creator share              // current global config
+Creation fee     = 0.001 ETH flat                      // current global config
 Uniswap pool     = 1% fee tier (10000), full-range position
 ```
+
+The three fee values form the global, owner-tunable config (hard-capped at 5% trade fee / 0.1 ETH creation fee). Each token snapshots the config at `createToken` — read a token's own fees from its `CurveState`, not from the global config, which only tells you what *future* launches will pay.

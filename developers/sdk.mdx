@@ -73,14 +73,19 @@ const states = await hood.read.getCurveStates(tokens);
 const info = await hood.read.getTokenInfo(tokens[0]);
 // → { address, name, symbol, metadataURI }
 const state = await hood.read.getCurveState(tokens[0]);
-// → { virtualEth, virtualToken, realTokensLeft, realEth, creator, graduated, migrated }
+// → { virtualEth, virtualToken, realTokensLeft, realEth, creator, graduated, migrated,
+//     protocolFeeBps, creatorFeeBps, creatorLpShareBps }  ← the token's frozen fee snapshot
 
-// Protocol-wide fee config in basis points. The fees are immutable
-// on-chain, so this is safe to fetch once and cache.
-const { protocolFeeBps, creatorFeeBps, totalFeeBps } = await hood.read.getFees();
+// The GLOBAL fee config (owner-tunable; what FUTURE launches will snapshot).
+// For a specific token's fees, use its CurveState snapshot — those never change.
+const { protocolFeeBps, creatorFeeBps, totalFeeBps, creatorLpShareBps, creationFee } =
+  await hood.read.getFees();
 
-// Creator's share of post-graduation LP fees (3000 bps = 30%; also immutable)
-const share = await hood.read.lockerCreatorShareBps();
+// A token's snapshotted LP fee share (fixed at its creation)
+const share = await hood.read.creatorLpShareBpsOf(token);
+
+// Backend wallet allowed to trigger fee payouts (zero address = disabled)
+const authority = await hood.read.claimAuthority();
 ```
 
 ## Quoting
@@ -88,10 +93,10 @@ const share = await hood.read.lockerCreatorShareBps();
 You can quote **on-chain** (source of truth) or **client-side**. The SDK's `math` module is a bit-exact mirror of the contract's rounding, so quotes match to the wei with zero RPC round-trips:
 
 ```ts
-import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate } from "@hoodstudio/hoodstar-sdk";
+import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate, totalFeeBpsOf } from "@hoodstudio/hoodstar-sdk";
 
 const state = await hood.read.getCurveState(token);
-const { totalFeeBps } = await hood.read.getFees();
+const totalFeeBps = totalFeeBpsOf(state); // from the token's own snapshot — no extra RPC call
 
 // Instant, local, exact
 const q = quoteBuy(state, totalFeeBps, parseEther("1"));
@@ -107,11 +112,11 @@ const onchain = await hood.read.quoteBuy(token, parseEther("1"));
 
 ## Launching a token
 
-`createToken` deploys the ERC-20 and opens its curve. Recover the token address from the `TokenCreated` event in the receipt:
+`createToken` deploys the ERC-20 and opens its curve. The flat creation fee (0.001 ETH under the current config) is read live and added to the transaction value automatically, so `devBuyEth` is exactly the dev buy. Recover the token address from the `TokenCreated` event in the receipt — the event also carries the token's frozen fee snapshot:
 
 ```ts
 import { parseEventLogs } from "viem";
-import { hoodLaunchpadAbi } from "@hoodstudio/hoodstar-sdk";
+import { hoodstarDotFunAbi } from "@hoodstudio/hoodstar-sdk";
 
 const hash = await hood.write.createToken({
   name: "My Star",
@@ -122,11 +127,11 @@ const hash = await hood.write.createToken({
 
 const receipt = await publicClient.waitForTransactionReceipt({ hash });
 const [created] = parseEventLogs({
-  abi: hoodLaunchpadAbi,
+  abi: hoodstarDotFunAbi,
   logs: receipt.logs,
   eventName: "TokenCreated",
 });
-const token = created.args.token;
+const token = created.args.token; // args also include protocolFeeBps / creatorFeeBps / creatorLpShareBps
 ```
 
 <Note>
@@ -184,15 +189,23 @@ const positionId = await hood.read.positionOf(token);     // locked LP NFT id (0
 
 ## Claiming fees
 
+Claims are gated but never redirectable: funds always go to the registered recipient, and only the recipient itself (or the platform's claim-authority backend) can trigger the payout.
+
 ```ts
 // Accrued but unclaimed creator fees for a token (in wei)
 const owed = await hood.read.creatorFeesOwed(token);
 
-// Claims are permissionless; funds always go to the registered recipient
+// Fee recipient or claim authority only; pays the recipient
 await hood.write.claimCreatorFees(token);
-await hood.write.claimProtocolFees(); // pays the treasury
 
-// Harvest locked-LP swap fees for a graduated token (30/70 creator/treasury)
+// Airdrop mode (claim authority): pay many tokens' recipients in one tx
+await hood.write.claimCreatorFeesBatch([tokenA, tokenB, tokenC]);
+
+// Treasury only
+await hood.write.claimProtocolFees();
+
+// Harvest locked-LP swap fees for a graduated token — recipient, treasury,
+// or claim authority; split at the token's snapshotted ratio
 const locker = await hood.read.locker();
 await hood.write.collectFees(locker, token);
 
@@ -252,16 +265,16 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 
 <AccordionGroup>
   <Accordion title="hood.read: all methods">
-    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `lockerCreatorShareBps()`, `locker()`, `treasury()`, `weth()`, `positionManager()`
+    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `claimAuthority()`, `creatorLpShareBpsOf(token)`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `locker()`, `treasury()`, `weth()`, `positionManager()`
   </Accordion>
   <Accordion title="hood.write: all methods">
-    `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
+    `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimCreatorFeesBatch(tokens[])`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
-    `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
+    `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `totalFeeBpsOf(state)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
   </Accordion>
   <Accordion title="ABIs">
-    `hoodLaunchpadAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing.
+    `hoodstarDotFunAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing. (`hoodLaunchpadAbi` remains as a deprecated alias of `hoodstarDotFunAbi`.)
   </Accordion>
 </AccordionGroup>
 

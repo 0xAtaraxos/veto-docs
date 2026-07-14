@@ -23,7 +23,7 @@ When your token graduates, its Uniswap v3 liquidity is locked in the FeeLocker v
 | Creator (you) | 30% |
 | Protocol treasury | 70% |
 
-The 30% mirrors your share of curve fees (0.3% of the 1% trade fee): one ratio across both phases, fixed in the contracts forever.
+The 30% mirrors your share of curve fees (0.3% of the 1% trade fee). Your token's fee terms are **snapshotted on-chain the moment you launch** and can never change afterwards — not by you, not by the platform. (The platform can tune the rates offered to *future* launches, within hard caps.)
 
 Every Uniswap swap of your token, from any interface, aggregator, or bot on Robinhood Chain, earns you fees. This stream has no expiry.
 
@@ -39,7 +39,7 @@ Every Uniswap swap of your token, from any interface, aggregator, or bot on Robi
 </Steps>
 
 <Note>
-  Claims are **pull-based and permissionless at the contract level**: the claim function can be triggered by anyone, but the money only ever goes to the registered fee recipient, which is you. That means a helpful bot (or the platform) can claim on your behalf without ever being able to take your fees.
+  Claims are **pull-based and protected**: only you (the registered fee recipient) or the platform's claimer service can trigger a payout, and the money only ever goes to you — no caller can redirect it. The platform periodically batch-claims on creators' behalf, so fees may simply arrive in your wallet without you doing anything.
 </Note>
 
 ## Redirecting your fee stream
