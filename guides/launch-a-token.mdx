@@ -1,0 +1,56 @@
+---
+title: "Launch a Token"
+description: "Create your own meme coin on hoodstar.fun in one transaction — no creation fee."
+icon: "rocket"
+---
+
+Launching on hoodstar.fun takes one transaction and costs nothing beyond gas.
+
+## Before you start
+
+- A connected wallet with a little ETH on Robinhood Chain ([Connect a Wallet](/guides/connect-wallet))
+- A **name** and **ticker** for your token
+- A square **logo image** (PNG/JPG, ideally 256×256 or larger)
+- Optionally: a description and social links (X, Telegram, website)
+
+## Steps
+
+<Steps>
+  <Step title="Open Create">
+    On [hoodstar.fun](https://hoodstar.fun), click **Create**.
+  </Step>
+  <Step title="Fill in the basics">
+    Enter the name and ticker, upload your logo, and add a description and socials. Your media and metadata are pinned to IPFS, and the resulting metadata URI is stored immutably on the token contract.
+  </Step>
+  <Step title="Optional: dev buy">
+    Attach ETH to make the very first buy on your own curve. This executes at the **same public starting price** anyone else would get — you receive no free or discounted tokens. A visible dev buy signals commitment, but a large one followed by a dump will be visible on-chain too.
+  </Step>
+  <Step title="Review and launch">
+    Check everything — token details are **immutable after launch**. Confirm the transaction. Your token deploys, its bonding curve opens, and it's instantly live and tradable on the site.
+  </Step>
+  <Step title="Share it">
+    Every token gets its own page with a live chart, trades, and comments. Share the link and start building your community.
+  </Step>
+</Steps>
+
+## What your launch creates
+
+| Property | Value |
+| --- | --- |
+| Token standard | ERC-20 with EIP-2612 permit (gasless approvals) |
+| Total supply | 1,000,000,000 — minted once, fixed forever |
+| Sold on the bonding curve | 793,100,000 (79.31%) |
+| Reserved for Uniswap liquidity | 206,900,000 (20.69%) |
+| Creation fee | None (gas only) |
+| Creator allocation | 0 tokens |
+| Admin functions on the token | None — no owner, mint, pause, or blacklist |
+
+## Immutable vs. yours to earn
+
+Once launched, **nothing about the token can be changed** — not by you, not by the platform: supply, name, ticker, metadata URI, curve parameters, and fee rates are all fixed.
+
+What you get as the creator is a **fee stream**: 0.3% of every curve trade, and 50% of Uniswap swap fees after graduation, claimable anytime. See [Creator Rewards](/guides/creator-rewards).
+
+<Note>
+  You can redirect where your creator fees are paid (for example, to a multisig) at any time — but only the current fee recipient can do that.
+</Note>

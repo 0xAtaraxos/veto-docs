@@ -1,0 +1,55 @@
+---
+title: "Graduation & Uniswap Migration"
+description: "How a hoodstar.fun token graduates from the bonding curve into a permanently locked Uniswap v3 pool."
+icon: "graduation-cap"
+---
+
+Graduation is the one-way transition from the bonding curve to open DEX trading. It happens automatically when the curve sells out, and it's designed so that **nobody — not the creator, not the team — can interfere with it or profit unfairly from it**.
+
+## Step 1 — The curve sells out
+
+When a buy consumes the last of the 793,100,000-token curve allocation:
+
+- The buy is partially filled to exactly the remaining supply; excess ETH is refunded in the same transaction.
+- The curve is marked **graduated** and frozen forever. No further curve trades, ever.
+
+## Step 2 — Migration to Uniswap v3
+
+Anyone can then call `migrate` — it's **permissionless, free, and takes no parameters**. The typical flow is that the platform triggers it immediately, but if it ever didn't, any user could. Migration does the following atomically:
+
+<Steps>
+  <Step title="Wrap the raised ETH">
+    The ~4.53 ETH raised on the curve is wrapped to WETH.
+  </Step>
+  <Step title="Create the pool at the curve's final price">
+    A **full-range Uniswap v3 position** is minted from the WETH plus the reserved 206,900,000 tokens, in the 1% fee tier, priced exactly at the curve's closing price — so there's no arbitrage gap between curve and pool.
+  </Step>
+  <Step title="Lock the LP forever">
+    The position NFT is minted directly into the **FeeLocker** — an immutable, ownerless vault with no withdrawal or transfer function. The principal is locked permanently; only accumulated swap fees can ever be collected from it.
+  </Step>
+  <Step title="Burn the dust">
+    Any leftover tokens from the mint are burned to `0xdEaD`; leftover WETH dust accrues to the protocol's fee balance. Nothing returns to any privileged wallet.
+  </Step>
+</Steps>
+
+## Anti-manipulation protections
+
+Uniswap v3 pools can be pre-created by anyone. If someone initializes the pool at a hostile price before migration (a griefing attack), the migration performs a bounded corrective swap to push the pool back to the fair curve price before minting liquidity — so migration can neither be blocked nor exploited for a price gap.
+
+## Before vs. after
+
+| | On the curve | After graduation |
+| --- | --- | --- |
+| Venue | hoodstar.fun bonding curve | Uniswap v3 pool (1% fee tier) on Robinhood Chain |
+| Price discovery | Deterministic formula | Open market |
+| Trade fee | 1% (0.7% protocol / 0.3% creator) | 1% pool fee → locked LP → 50/50 creator/treasury |
+| Who can trade | Anyone via hoodstar.fun or the contracts | Anyone, anywhere — wallets, aggregators, bots |
+| Liquidity | Guaranteed by curve solvency | Locked forever in the FeeLocker |
+
+## For holders: nothing to do
+
+Your tokens don't change at graduation — same contract address, same balance. Only the trading venue changes, and the hoodstar.fun token page routes your trades to Uniswap automatically.
+
+<Note>
+  The token remains listed on hoodstar.fun after graduation with its full chart history, and gets a "Graduated" badge. Because it's a standard ERC-20 in a standard Uniswap pool, it will also appear on explorers and DEX trackers across the Robinhood Chain ecosystem.
+</Note>
