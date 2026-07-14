@@ -1,0 +1,56 @@
+---
+title: "Connect a Wallet"
+description: "Connect an EVM wallet to hoodstar.fun and add Robinhood Chain."
+icon: "wallet"
+---
+
+hoodstar.fun runs on **Robinhood Chain**, an EVM-compatible Arbitrum Orbit L2. Any standard Ethereum wallet works.
+
+## Supported wallets
+
+<CardGroup cols={2}>
+  <Card title="Browser wallets" icon="wallet">
+    MetaMask and other injected EVM wallets (Rabby, Coinbase Wallet, etc.) — the primary way to connect.
+  </Card>
+  <Card title="Email & social login" icon="envelope">
+    Sign in with email or a social account via Privy — a wallet is created for you, no extension required.
+  </Card>
+</CardGroup>
+
+## Network details
+
+Your wallet needs Robinhood Chain added as a network. The app will prompt you to add it automatically when you connect; to add it manually, use:
+
+| Setting | Value |
+| --- | --- |
+| Network name | Robinhood Chain |
+| Chain ID | `4663` |
+| RPC URL | `https://rpc.mainnet.chain.robinhood.com` |
+| Currency symbol | ETH (18 decimals) |
+| Block explorer | `https://robinhoodchain.blockscout.com` |
+
+<Info>
+  Gas on Robinhood Chain is paid in **ETH**. You'll need ETH bridged to Robinhood Chain to trade — keep a little extra beyond your trade size to cover gas.
+</Info>
+
+## Signing in
+
+<Steps>
+  <Step title="Click Connect">
+    Open [hoodstar.fun](https://hoodstar.fun) and click **Connect Wallet**.
+  </Step>
+  <Step title="Approve the connection">
+    Choose your wallet and approve the connection request. If prompted, approve adding/switching to Robinhood Chain.
+  </Step>
+  <Step title="Sign the sign-in message">
+    The app asks for one **free, gasless signature** (EIP-191) to verify you own the wallet. This unlocks profile features like favorites and comments. It is not a transaction and cannot move funds.
+  </Step>
+</Steps>
+
+## Non-custodial, always
+
+Connecting never gives hoodstar.fun control of your funds. Every trade, launch, and claim is a transaction you sign yourself, executed by open smart contracts.
+
+<Warning>
+  Never share your seed phrase or private keys. The hoodstar.fun team will never DM you first, never ask for your keys, and never ask you to "validate" your wallet on another site.
+</Warning>
