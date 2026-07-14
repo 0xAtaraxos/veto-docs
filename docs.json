@@ -9,10 +9,13 @@
     "dark": "#F0B90B"
   },
   "logo": {
-    "light": "/logo/hoodstar.svg",
-    "dark": "/logo/hoodstar.svg"
+    "light": "/logo/hoodstar-wordmark-black.svg",
+    "dark": "/logo/hoodstar-wordmark-white.svg"
   },
-  "favicon": "/logo/hoodstar.svg",
+  "favicon": {
+    "light": "/logo/hoodstar-black.svg",
+    "dark": "/logo/hoodstar-white.svg"
+  },
   "appearance": {
     "default": "dark"
   },
