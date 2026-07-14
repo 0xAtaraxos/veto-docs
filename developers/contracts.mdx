@@ -1,10 +1,10 @@
 ---
 title: "Contract Reference"
-description: "The hoodstar.fun smart contracts — HoodLaunchpad, HoodToken, and FeeLocker — functions, events, and errors."
+description: "The hoodstar.fun smart contracts (HoodLaunchpad, HoodToken, and FeeLocker): functions, events, and errors."
 icon: "file-contract"
 ---
 
-Three contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **HoodLaunchpad** address — everything else is discoverable from it.
+Three contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **HoodLaunchpad** address. Everything else is discoverable from it.
 
 ## HoodLaunchpad
 
@@ -80,8 +80,8 @@ function setFeeRecipient(address token, address newRecipient) external; // curre
 function creatorFeesOwed(address token) external view returns (uint256);
 function protocolFeesOwed() external view returns (uint256);
 function feeRecipientOf(address token) external view returns (address);
-function protocolFeeBps() external view returns (uint256);  // 70 — immutable
-function creatorFeeBps() external view returns (uint256);   // 30 — immutable
+function protocolFeeBps() external view returns (uint256);  // 70, immutable
+function creatorFeeBps() external view returns (uint256);   // 30, immutable
 ```
 
 Fee bps are `immutable`: set in the constructor (total hard-capped at 500 bps there) and fixed for the lifetime of the contract. There is no `setFees`.
@@ -114,7 +114,7 @@ The per-launch ERC-20, deployed by `createToken`:
 
 - OpenZeppelin `ERC20` + `ERC20Permit` (EIP-2612), 18 decimals
 - Fixed supply of 1,000,000,000 × 1e18, minted once to the launchpad
-- `metadataURI()` — immutable token metadata pointer (e.g. `ipfs://…`)
+- `metadataURI()`: immutable token metadata pointer (e.g. `ipfs://…`)
 - **No** owner, mint, burn-by-admin, pause, blacklist, or fee-on-transfer
 
 ## FeeLocker
@@ -124,10 +124,10 @@ The immutable, ownerless vault for graduated liquidity:
 ```solidity
 function positionOf(address token) external view returns (uint256 tokenId); // 0 = not migrated
 function collectFees(address token) external;  // harvests pool fees, splits 30/70 creator/treasury
-function creatorShareBps() external view returns (uint256);  // 3000 — immutable
+function creatorShareBps() external view returns (uint256);  // 3000, immutable
 ```
 
-The locker has no function that can transfer a position out — locked liquidity is permanent by construction. The creator's 30% share is not a separate parameter: the constructor derives it from the launchpad's immutable fee ratio (`creatorFeeBps / (protocolFeeBps + creatorFeeBps)`), so the LP split always mirrors the curve split.
+The locker has no function that can transfer a position out; locked liquidity is permanent by construction. The creator's 30% share is not a separate parameter: the constructor derives it from the launchpad's immutable fee ratio (`creatorFeeBps / (protocolFeeBps + creatorFeeBps)`), so the LP split always mirrors the curve split.
 
 ## Curve constants
 

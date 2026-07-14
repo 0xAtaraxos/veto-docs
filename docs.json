@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "hoodstar.fun",
-  "description": "hoodstar.fun is the meme coin launchpad on Robinhood Chain — launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
+  "description": "hoodstar.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
   "colors": {
     "primary": "#F0B90B",
     "light": "#FFD75E",
@@ -40,49 +40,59 @@
     }
   },
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Introduction",
-        "pages": [
-          "index",
-          "introduction/how-it-works",
-          "introduction/star-token",
-          "introduction/official-links",
-          "introduction/faq"
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "index",
+              "introduction/how-it-works",
+              "introduction/star-token",
+              "introduction/official-links",
+              "introduction/faq"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "pages": [
+              "guides/connect-wallet",
+              "guides/launch-a-token",
+              "guides/trading",
+              "guides/creator-rewards"
+            ]
+          },
+          {
+            "group": "Protocol",
+            "pages": [
+              "protocol/bonding-curve",
+              "protocol/graduation",
+              "protocol/fees",
+              "protocol/security"
+            ]
+          },
+          {
+            "group": "Legal",
+            "pages": [
+              "legal/terms-of-service",
+              "legal/privacy-policy",
+              "legal/risk-disclosure"
+            ]
+          }
         ]
       },
       {
-        "group": "Getting Started",
-        "pages": [
-          "guides/connect-wallet",
-          "guides/launch-a-token",
-          "guides/trading",
-          "guides/creator-rewards"
-        ]
-      },
-      {
-        "group": "Protocol",
-        "pages": [
-          "protocol/bonding-curve",
-          "protocol/graduation",
-          "protocol/fees",
-          "protocol/security"
-        ]
-      },
-      {
-        "group": "Developers",
-        "pages": [
-          "developers/overview",
-          "developers/sdk",
-          "developers/contracts"
-        ]
-      },
-      {
-        "group": "Legal",
-        "pages": [
-          "legal/terms-of-service",
-          "legal/privacy-policy",
-          "legal/risk-disclosure"
+        "tab": "Developers",
+        "groups": [
+          {
+            "group": "Developers",
+            "pages": [
+              "developers/overview",
+              "developers/sdk",
+              "developers/contracts"
+            ]
+          }
         ]
       }
     ]

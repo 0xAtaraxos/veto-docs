@@ -21,23 +21,23 @@ hoodstar.fun has one of the simplest fee schedules in the launchpad space. Every
 Taken in ETH on every buy and sell, and split:
 
 <CardGroup cols={2}>
-  <Card title="Protocol — 0.7%" icon="building-columns">
+  <Card title="Protocol · 0.7%" icon="building-columns">
     Accrues to the protocol treasury. Funds platform development and operations.
   </Card>
-  <Card title="Creator — 0.3%" icon="user-star">
-    Accrues to the token creator's claimable balance — see [Creator Rewards](/guides/creator-rewards).
+  <Card title="Creator · 0.3%" icon="user-star">
+    Accrues to the token creator's claimable balance. See [Creator Rewards](/guides/creator-rewards).
   </Card>
 </CardGroup>
 
 Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Claim functions are callable by anyone, but funds only ever go to the registered recipient (the creator's fee address, or the treasury).
 
 <Info>
-  Fee rates are **immutable**: 0.7% + 0.3% = 1%, fixed forever when the contract was deployed. There is no function to change them — not even for the protocol owner. (A 5% total cap was additionally enforced at construction.)
+  Fee rates are **immutable**: 0.7% + 0.3% = 1%, fixed forever when the contract was deployed. There is no function to change them, not even for the protocol owner. (A 5% total cap was additionally enforced at construction.)
 </Info>
 
 ## After graduation: Uniswap v3 pool fees
 
-Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity — which is the position locked in the FeeLocker vault. Anyone can trigger a fee collection, which splits the harvest:
+Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity, which is the position locked in the FeeLocker vault. Anyone can trigger a fee collection, which splits the harvest:
 
 | Recipient | Share |
 | --- | --- |

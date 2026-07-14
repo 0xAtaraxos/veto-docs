@@ -1,49 +1,49 @@
 ---
 title: "How hoodstar.fun Works"
 sidebarTitle: "How It Works"
-description: "The full lifecycle of a token on hoodstar.fun — from launch, through bonding-curve trading, to graduation into a locked Uniswap v3 pool."
+description: "The full lifecycle of a token on hoodstar.fun: from launch, through bonding-curve trading, to graduation into a locked Uniswap v3 pool."
 icon: "diagram-project"
 ---
 
-Every token on hoodstar.fun goes through the same transparent, on-chain lifecycle. There are no special cases and no admin shortcuts — the rules below are enforced by the smart contracts for every launch.
+Every token on hoodstar.fun goes through the same transparent, on-chain lifecycle. There are no special cases and no admin shortcuts. The rules below are enforced by the smart contracts for every launch.
 
-## Stage 1 — Launch
+## Stage 1: Launch
 
 A creator calls the launchpad with a **name**, **ticker**, and **metadata URI** (image and description, pinned to IPFS). One transaction deploys the token and opens its bonding curve.
 
 - **Supply:** exactly 1,000,000,000 tokens (18 decimals), minted once. The token has no owner, no mint function, no pause, no blacklist, and no transfer fees.
 - **Creation fee:** none. You only pay network gas.
-- **Optional dev buy:** the creator can attach ETH to the launch transaction to make the very first buy — at the same public starting price as everyone else. The creator receives **zero** free tokens.
+- **Optional dev buy:** the creator can attach ETH to the launch transaction to make the very first buy, at the same public starting price as everyone else. The creator receives **zero** free tokens.
 
-## Stage 2 — Bonding-curve trading
+## Stage 2: Bonding-curve trading
 
 793,100,000 tokens (79.31% of supply) are sold on a **constant-product bonding curve** (`x · y = k` over virtual reserves). The price is purely a function of curve state:
 
-- Every **buy** pushes the price up; every **sell** pushes it down — deterministically, with no order book and no market maker.
+- Every **buy** pushes the price up; every **sell** pushes it down. It's deterministic, with no order book and no market maker.
 - A **1% fee** is taken in ETH on every trade: 0.7% to the protocol, 0.3% to the token's creator. See [Fees](/protocol/fees).
 - Quotes are exact: what the contract quotes is what you get, protected by slippage limits and deadlines you set.
 
 The trading widget on each token page shows the live price, the curve progress bar, and the amount of ETH still needed to graduate.
 
-## Stage 3 — Graduation
+## Stage 3: Graduation
 
 When the buy that empties the 793.1M curve allocation lands, the curve **graduates**:
 
 - The final buy is partially filled to exactly the remaining supply, and any excess ETH is refunded automatically.
-- The curve freezes permanently — no more curve trades, and it can never reopen.
+- The curve freezes permanently. No more curve trades, and it can never reopen.
 
 Anyone can then trigger the **migration** (it's permissionless and free): the raised ETH is paired with the reserved 206,900,000 tokens (20.69% of supply) to create a full-range **Uniswap v3** pool at the final curve price, so there is no price gap between the curve and the pool.
 
 <Info>
-  The Uniswap v3 LP position is minted directly into an immutable **FeeLocker** vault with no withdrawal function. The liquidity is locked forever — it can never be pulled by the creator, the team, or anyone else. Only the accumulated swap **fees** can be collected. See [Graduation](/protocol/graduation).
+  The Uniswap v3 LP position is minted directly into an immutable **FeeLocker** vault with no withdrawal function. The liquidity is locked forever and can never be pulled by the creator, the team, or anyone else. Only the accumulated swap **fees** can be collected. See [Graduation](/protocol/graduation).
 </Info>
 
-## Stage 4 — Life after graduation
+## Stage 4: Life after graduation
 
 The token is now a plain ERC-20 with a live Uniswap v3 pool on Robinhood Chain:
 
-- Tradable by any wallet, aggregator, or trading bot — not just on hoodstar.fun.
-- Uniswap swap fees accumulate to the locked LP position and are split **30/70** between the creator and the protocol treasury — the same ratio as curve fees — claimable at any time.
+- Tradable by any wallet, aggregator, or trading bot, not just on hoodstar.fun.
+- Uniswap swap fees accumulate to the locked LP position and are split **30/70** between the creator and the protocol treasury (the same ratio as curve fees), claimable at any time.
 - The token contract itself never changes: same address, same fixed supply, no admin keys.
 
 ## What can never happen

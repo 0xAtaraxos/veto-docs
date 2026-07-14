@@ -1,17 +1,17 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on hoodstar.fun with @hoodstudio/hoodstar-sdk — typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on hoodstar.fun with @hoodstudio/hoodstar-sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@hoodstudio/hoodstar-sdk` is the official TypeScript SDK for the hoodstar.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) — its only peer dependency — covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
+`@hoodstudio/hoodstar-sdk` is the official TypeScript SDK for the hoodstar.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
 
 ```bash
 npm install @hoodstudio/hoodstar-sdk viem
 ```
 
 <Info>
-  The package ships both ESM and CommonJS builds (`import` and `require` both work). All amounts are `bigint` wei values — use viem's `parseEther` / `formatEther` helpers.
+  The package ships both ESM and CommonJS builds (`import` and `require` both work). All amounts are `bigint` wei values. Use viem's `parseEther` / `formatEther` helpers.
 </Info>
 
 ## Setup
@@ -36,20 +36,20 @@ const walletClient = createWalletClient({
 
 const hood = createHoodstar({
   publicClient,
-  walletClient, // optional — omit for read-only usage
+  walletClient, // optional; omit for read-only usage
   network: "mainnet",
 });
 ```
 
 <Warning>
-  Only `"mainnet"` is deployed. The `"testnet"` entry is a guarded placeholder (Uniswap v3 doesn't exist on Robinhood Chain testnet) — the SDK throws a descriptive error if you select it. For development, fork mainnet with Anvil and pass a custom deployment object (below).
+  Only `"mainnet"` is deployed. The `"testnet"` entry is a guarded placeholder (Uniswap v3 doesn't exist on Robinhood Chain testnet); the SDK throws a descriptive error if you select it. For development, fork mainnet with Anvil and pass a custom deployment object (below).
 </Warning>
 
 Three namespaces do all the work:
 
-- `hood.read` — typed views over the launchpad (curve state, quotes, fees, registry, pool info)
-- `hood.write` — transactions (throws if you didn't pass a `walletClient`)
-- `hood.watch` / `hood.backfill` — event streaming and historical indexing
+- `hood.read`: typed views over the launchpad (curve state, quotes, fees, registry, pool info)
+- `hood.write`: transactions (throws if you didn't pass a `walletClient`)
+- `hood.watch` / `hood.backfill`: event streaming and historical indexing
 
 <Note>
   **Local development:** you can point the SDK at any deployment (e.g. an Anvil fork) by passing a deployment object instead of a network name:
@@ -85,7 +85,7 @@ const share = await hood.read.lockerCreatorShareBps();
 
 ## Quoting
 
-You can quote **on-chain** (source of truth) or **client-side** — the SDK's `math` module is a bit-exact mirror of the contract's rounding, so quotes match to the wei with zero RPC round-trips:
+You can quote **on-chain** (source of truth) or **client-side**. The SDK's `math` module is a bit-exact mirror of the contract's rounding, so quotes match to the wei with zero RPC round-trips:
 
 ```ts
 import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate } from "@hoodstudio/hoodstar-sdk";
@@ -101,7 +101,7 @@ const price = currentPrice(state);            // wei per whole token
 const progress = curveProgressBps(state);     // 0–10000 (10000 = graduated)
 const remaining = ethToGraduate(state, totalFeeBps); // gross ETH to buy out the curve
 
-// Or ask the contract directly — identical results
+// Or ask the contract directly, identical results
 const onchain = await hood.read.quoteBuy(token, parseEther("1"));
 ```
 
@@ -130,7 +130,7 @@ const token = created.args.token;
 ```
 
 <Note>
-  Every `hood.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash` — await the receipt yourself with `publicClient.waitForTransactionReceipt`.
+  Every `hood.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash`. Await the receipt yourself with `publicClient.waitForTransactionReceipt`.
 </Note>
 
 ## Trading
@@ -141,7 +141,7 @@ const token = created.args.token;
 const ethIn = parseEther("1");
 const q = quoteBuy(await hood.read.getCurveState(token), totalFeeBps, ethIn);
 
-// Exact ETH in — slippage (default 1%) and deadline (default 5 min) built in
+// Exact ETH in; slippage (default 1%) and deadline (default 5 min) built in
 const hash = await hood.write.buy(token, ethIn, q.tokensOut, { slippageBps: 100 });
 await publicClient.waitForTransactionReceipt({ hash });
 
@@ -173,7 +173,7 @@ if (q.graduates) {
   // This buy will finish the curve; ethUsed < input and the remainder is refunded on-chain
 }
 
-// After graduation, anyone can migrate — permissionless and free
+// After graduation, anyone can migrate. It's permissionless and free.
 await publicClient.waitForTransactionReceipt({ hash: await hood.write.migrate(token) });
 
 // Inspect the resulting Uniswap v3 pool
@@ -188,7 +188,7 @@ const positionId = await hood.read.positionOf(token);     // locked LP NFT id (0
 // Accrued but unclaimed creator fees for a token (in wei)
 const owed = await hood.read.creatorFeesOwed(token);
 
-// Claims are permissionless — funds always go to the registered recipient
+// Claims are permissionless; funds always go to the registered recipient
 await hood.write.claimCreatorFees(token);
 await hood.write.claimProtocolFees(); // pays the treasury
 
@@ -211,7 +211,7 @@ const stop = hood.watch(
     onTrade: (e) => console.log(e.token, e.isBuy ? "buy" : "sell", e.ethGross),
     onGraduated: (e) => console.log("graduated", e.token, "raised", e.ethRaised),
     onMigrated: (e) => console.log("pool live", e.pool, "position", e.tokenId),
-    onBlockProcessed: (n) => saveCursor(n), // persist — resume point after restarts
+    onBlockProcessed: (n) => saveCursor(n), // persist this; it's your resume point after restarts
     onError: (err) => console.error(err),
   },
   { fromBlock: await loadCursor(), pollIntervalMs: 1000 },
@@ -239,9 +239,9 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 
 | Error | Meaning |
 | --- | --- |
-| `SlippageExceeded` | Curve moved past your `slippageBps` — re-quote and retry |
+| `SlippageExceeded` | Curve moved past your `slippageBps`; re-quote and retry |
 | `Expired` | The `deadline` passed before inclusion |
-| `CurveClosed` | Token already graduated — trade it on Uniswap instead |
+| `CurveClosed` | Token already graduated; trade it on Uniswap instead |
 | `CurveStillOpen` | `migrate` called before graduation |
 | `AlreadyMigrated` | `migrate` called twice |
 | `UnknownToken` | Address is not a hoodstar.fun launch |
@@ -251,17 +251,17 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 ## Full API surface
 
 <AccordionGroup>
-  <Accordion title="hood.read — all methods">
+  <Accordion title="hood.read: all methods">
     `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `lockerCreatorShareBps()`, `locker()`, `treasury()`, `weth()`, `positionManager()`
   </Accordion>
-  <Accordion title="hood.write — all methods">
-    `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)` — trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
+  <Accordion title="hood.write: all methods">
+    `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
-    `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)` — plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
+    `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
   </Accordion>
   <Accordion title="ABIs">
-    `hoodLaunchpadAbi`, `hoodTokenAbi`, `feeLockerAbi` — exported for direct viem/wagmi use and event parsing.
+    `hoodLaunchpadAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing.
   </Accordion>
 </AccordionGroup>
 

@@ -1,13 +1,13 @@
 ---
 title: "Trading"
-description: "How buying and selling works on hoodstar.fun — on the bonding curve and after graduation on Uniswap v3."
+description: "How buying and selling works on hoodstar.fun, on the bonding curve and after graduation on Uniswap v3."
 icon: "chart-line-up"
 ---
 
 Every token page has a trading widget with live pricing. Where your trade executes depends on the token's stage:
 
-- **On the curve** — your trade goes to the hoodstar.fun bonding curve contract.
-- **Graduated** — the token trades on its Uniswap v3 pool.
+- **On the curve:** your trade goes to the hoodstar.fun bonding curve contract.
+- **Graduated:** the token trades on its Uniswap v3 pool.
 
 ## Buying on the curve
 
@@ -19,7 +19,7 @@ Every token page has a trading widget with live pricing. Where your trade execut
     Your transaction includes a minimum-receive amount. If the curve moves past your slippage tolerance before your transaction lands, it reverts and your ETH stays in your wallet (minus gas). Default tolerance is 1%; adjust it in the widget settings.
   </Step>
   <Step title="Confirm">
-    Sign the transaction. Tokens arrive in your wallet as soon as it confirms — usually within a couple of seconds on Robinhood Chain.
+    Sign the transaction. Tokens arrive in your wallet as soon as it confirms, usually within a couple of seconds on Robinhood Chain.
   </Step>
 </Steps>
 
@@ -42,10 +42,10 @@ Plus network gas on every transaction. Full details in [Fees](/protocol/fees).
 
 ## Why a trade can fail
 
-- **Slippage exceeded** — the curve moved more than your tolerance; retry with a fresh quote.
-- **Deadline expired** — the transaction sat in the mempool too long (default deadline is 5 minutes).
-- **Curve closed** — the token graduated between your quote and your transaction; trade it on Uniswap instead.
-- **Insufficient ETH** — remember to leave room for gas.
+- **Slippage exceeded.** The curve moved more than your tolerance; retry with a fresh quote.
+- **Deadline expired.** The transaction sat in the mempool too long (default deadline is 5 minutes).
+- **Curve closed.** The token graduated between your quote and your transaction; trade it on Uniswap instead.
+- **Insufficient ETH.** Remember to leave room for gas.
 
 <Warning>
   Meme coins are extremely volatile and most go to zero. Never trade more than you can afford to lose. See the [Risk Disclosure](/legal/risk-disclosure).

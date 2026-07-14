@@ -1,16 +1,16 @@
 ---
 title: "Developer Overview"
-description: "Build on hoodstar.fun — chain details, contract architecture, addresses, and integration paths."
+description: "Build on hoodstar.fun: chain details, contract architecture, addresses, and integration paths."
 icon: "code"
 ---
 
-Everything on hoodstar.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, or entire alternative frontends — no API key required.
+Everything on hoodstar.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, or entire alternative frontends. No API key required.
 
 ## Two ways to integrate
 
 <CardGroup cols={2}>
   <Card title="TypeScript SDK" icon="js" href="/developers/sdk">
-    `@hoodstudio/hoodstar-sdk` — typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
+    `@hoodstudio/hoodstar-sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
   </Card>
   <Card title="Raw contracts" icon="file-contract" href="/developers/contracts">
     Call the launchpad directly from Solidity, Foundry scripts, or any web3 library. Full function and error reference.
@@ -28,7 +28,7 @@ Everything on hoodstar.fun is on-chain and permissionlessly integrable. You can 
 
 Robinhood Chain is an **Arbitrum Orbit L2**. Two practical consequences:
 
-- Blocks are fast and reorgs are effectively nonexistent — confirmation counts of 0–1 are fine.
+- Blocks are fast and reorgs are effectively nonexistent, so confirmation counts of 0–1 are fine.
 - The public RPC is **HTTP only** (no `eth_subscribe` websocket). The SDK's event layer is built around chunked `eth_getLogs` polling for exactly this reason; for websockets you need a paid RPC provider.
 
 ## Architecture
@@ -51,7 +51,7 @@ flowchart LR
 | **HoodToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
 | **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees 30% creator / 70% treasury (mirrors the curve fee ratio). |
 
-Only the launchpad address is needed to integrate — the FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
+Only the launchpad address is needed to integrate. The FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
 
 ## Contract addresses
 
@@ -83,7 +83,7 @@ SALE_SUPPLY      =   793_100_000 × 1e18   // sold on the curve
 POOL_SUPPLY      =   206_900_000 × 1e18   // reserved for Uniswap LP
 VIRTUAL_TOKEN_0  = 1_073_000_000 × 1e18   // initial virtual token reserve
 virtualEth0      = 1.6 ETH                // initial virtual ETH reserve (deploy parameter)
-Trade fee        = 100 bps (70 protocol / 30 creator) — immutable, no setter
+Trade fee        = 100 bps (70 protocol / 30 creator), immutable, no setter
 LP fee split     = 3000 bps creator share, derived from the trade-fee ratio
 Uniswap pool     = 1% fee tier (10000), full-range position
 ```

@@ -1,31 +1,31 @@
 ---
 title: "Creator Rewards"
-description: "How creators earn on hoodstar.fun — 0.3% of every curve trade and 30% of Uniswap fees after graduation, forever."
+description: "How creators earn on hoodstar.fun: 0.3% of every curve trade and 30% of Uniswap fees after graduation, forever."
 icon: "gift"
 ---
 
 Launching a token on hoodstar.fun gives you a permanent, on-chain fee stream. There are two phases:
 
-## Stream 1 — While on the bonding curve
+## Stream 1: While on the bonding curve
 
 Every buy and sell on your token's curve pays a **1% fee in ETH**. Your share is **0.3%** of the trade (the protocol takes 0.7%).
 
-- Fees accrue to your token's on-chain balance automatically — nothing to configure.
+- Fees accrue to your token's on-chain balance automatically, nothing to configure.
 - Claim any time from your creator dashboard; claims never expire.
 - Payouts are in ETH, straight to your fee-recipient address.
 
-## Stream 2 — After graduation, forever
+## Stream 2: After graduation, forever
 
-When your token graduates, its Uniswap v3 liquidity is locked in the FeeLocker vault. The vault can't withdraw the liquidity — but it collects the pool's **1% swap fees**, and splits them:
+When your token graduates, its Uniswap v3 liquidity is locked in the FeeLocker vault. The vault can't withdraw the liquidity, but it collects the pool's **1% swap fees** and splits them:
 
 | Recipient | Share |
 | --- | --- |
 | Creator (you) | 30% |
 | Protocol treasury | 70% |
 
-The 30% mirrors your share of curve fees (0.3% of the 1% trade fee) — one ratio across both phases, fixed in the contracts forever.
+The 30% mirrors your share of curve fees (0.3% of the 1% trade fee): one ratio across both phases, fixed in the contracts forever.
 
-Every Uniswap swap of your token — from any interface, aggregator, or bot on Robinhood Chain — earns you fees. This stream has no expiry.
+Every Uniswap swap of your token, from any interface, aggregator, or bot on Robinhood Chain, earns you fees. This stream has no expiry.
 
 ## Claiming
 
@@ -39,12 +39,12 @@ Every Uniswap swap of your token — from any interface, aggregator, or bot on R
 </Steps>
 
 <Note>
-  Claims are **pull-based and permissionless at the contract level**: the claim function can be triggered by anyone, but the money only ever goes to the registered fee recipient — you. That means a helpful bot (or the platform) can claim on your behalf without ever being able to take your fees.
+  Claims are **pull-based and permissionless at the contract level**: the claim function can be triggered by anyone, but the money only ever goes to the registered fee recipient, which is you. That means a helpful bot (or the platform) can claim on your behalf without ever being able to take your fees.
 </Note>
 
 ## Redirecting your fee stream
 
-The current fee recipient of a token can reassign the stream to a different address — useful for routing earnings to a multisig, a splitter contract, or a new wallet. This applies to both curve fees and the creator share of post-graduation LP fees.
+The current fee recipient of a token can reassign the stream to a different address. This is useful for routing earnings to a multisig, a splitter contract, or a new wallet, and it applies to both curve fees and the creator share of post-graduation LP fees.
 
 <Warning>
   Redirecting the fee stream is irreversible unless the *new* recipient redirects it back. Double-check the address.

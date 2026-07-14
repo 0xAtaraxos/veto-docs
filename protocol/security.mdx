@@ -1,6 +1,6 @@
 ---
 title: "Security & Trust Model"
-description: "What the hoodstar.fun contracts can and cannot do — the trust model, admin surface, and audit status."
+description: "What the hoodstar.fun contracts can and cannot do: the trust model, admin surface, and audit status."
 icon: "shield-halved"
 ---
 
@@ -24,15 +24,15 @@ The launchpad holds curve funds and enforces the lifecycle. Its owner (the proto
 | Change the treasury address | Only affects where protocol fees go |
 | Set the FeeLocker address | One-time, at deployment (already done) |
 
-That's the complete list. Trade fees are **immutable** — fixed at deployment with no setter, so not even the owner can change them. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
+That's the complete list. Trade fees are **immutable**, fixed at deployment with no setter, so not even the owner can change them. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
 
 ## Locked liquidity
 
-At graduation, the Uniswap v3 LP position is minted directly into the **FeeLocker** — a vault that is:
+At graduation, the Uniswap v3 LP position is minted directly into the **FeeLocker**, a vault that is:
 
-- **Immutable** — no upgrade path.
-- **Ownerless** — no admin functions.
-- **Withdrawal-free** — the code contains no function that can move the LP position out. Only swap *fees* can be collected, and those are split 30% creator / 70% treasury — an immutable ratio derived at deployment from the launchpad's own fixed fee split.
+- **Immutable.** No upgrade path.
+- **Ownerless.** No admin functions.
+- **Withdrawal-free.** The code contains no function that can move the LP position out. Only swap *fees* can be collected, and those are split 30% creator / 70% treasury, an immutable ratio derived at deployment from the launchpad's own fixed fee split.
 
 Locked means locked: the liquidity is provably unreachable by anyone, forever.
 
@@ -47,9 +47,9 @@ Locked means locked: the liquidity is provably unreachable by anyone, forever.
 The contracts have undergone internal security review (including a fixed high-severity finding around pool-initialization griefing at migration, now mitigated with a bounded corrective swap). An independent third-party audit is planned; this page will link the report when published.
 
 <Warning>
-  Smart contract risk can never be zero, and locked liquidity does not protect you from a token's price going to zero. A creator can still buy early and sell on holders — those trades are public on-chain, so check the creator's activity before buying. See the [Risk Disclosure](/legal/risk-disclosure).
+  Smart contract risk can never be zero, and locked liquidity does not protect you from a token's price going to zero. A creator can still buy early and sell on holders. Those trades are public on-chain, so check the creator's activity before buying. See the [Risk Disclosure](/legal/risk-disclosure).
 </Warning>
 
 ## Responsible disclosure
 
-Found a vulnerability? Contact the team privately at **contact@hoodstar.io** or via ticket in our [Discord](https://discord.gg/q8VwC8ZGp) — please don't disclose publicly before we've had a chance to respond.
+Found a vulnerability? Contact the team privately at **contact@hoodstar.fun** or via ticket in our [Discord](https://discord.gg/q8VwC8ZGp). Please don't disclose publicly before we've had a chance to respond.

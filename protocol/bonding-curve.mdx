@@ -1,6 +1,6 @@
 ---
 title: "The Bonding Curve"
-description: "The exact math behind hoodstar.fun pricing — constant-product curve, virtual reserves, and graduation numbers."
+description: "The exact math behind hoodstar.fun pricing: constant-product curve, virtual reserves, and graduation numbers."
 icon: "function"
 ---
 
@@ -41,7 +41,7 @@ With the current 1.6 ETH virtual reserve, that works out to:
 | FDV at graduation | ~21.9 ETH |
 
 <Info>
-  The virtual ETH reserve is the protocol's single economic knob and is fixed per deployment — it scales the ETH cost of the curve without changing its shape. All other constants are hard-coded in the contract.
+  The virtual ETH reserve is the protocol's single economic knob and is fixed per deployment. It scales the ETH cost of the curve without changing its shape. All other constants are hard-coded in the contract.
 </Info>
 
 ## Buys, sells, and rounding
@@ -52,7 +52,7 @@ For a buy of `ethIn` (after the 1% fee is skimmed):
 tokensOut = virtualToken − k / (virtualEth + ethInAfterFee)
 ```
 
-Sells are the mirror image. All rounding is done **in the pool's favor** (`k` can never decrease), which protects the curve's solvency — this invariant is fuzz-tested in the contract suite.
+Sells are the mirror image. All rounding is done **in the pool's favor** (`k` can never decrease), which protects the curve's solvency. This invariant is fuzz-tested in the contract suite.
 
 Quotes from the contract's `quoteBuy` / `quoteSell` functions are exact. The [SDK](/developers/sdk) also ships a bit-exact client-side mirror of this math so UIs and bots can quote without an RPC round-trip.
 
@@ -61,10 +61,10 @@ Quotes from the contract's `quoteBuy` / `quoteSell` functions are exact. The [SD
 The curve tracks how much of the 793.1M sale allocation remains. The buy that empties it:
 
 1. Fills exactly to the remaining supply (excess ETH is refunded in the same transaction),
-2. Marks the curve **graduated** — permanently frozen, and
+2. Marks the curve **graduated**, permanently frozen, and
 3. Makes the token eligible for [migration to Uniswap v3](/protocol/graduation).
 
-The graduation threshold is **supply-based, not market-cap-based** — there's no oracle and nothing to manipulate: sell out the curve and it graduates, every time.
+The graduation threshold is **supply-based, not market-cap-based**. There's no oracle and nothing to manipulate: sell out the curve and it graduates, every time.
 
 ## Why sells can never break the curve
 
