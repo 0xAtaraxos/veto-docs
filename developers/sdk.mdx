@@ -11,7 +11,7 @@ npm install @hoodstar/sdk viem
 ```
 
 <Info>
-  The package is ESM-only. All amounts are `bigint` wei values — use viem's `parseEther` / `formatEther` helpers.
+  The package ships both ESM and CommonJS builds (`import` and `require` both work). All amounts are `bigint` wei values — use viem's `parseEther` / `formatEther` helpers.
 </Info>
 
 ## Setup
@@ -37,9 +37,13 @@ const walletClient = createWalletClient({
 const hood = createHoodstar({
   publicClient,
   walletClient, // optional — omit for read-only usage
-  network: "mainnet", // or "testnet"
+  network: "mainnet",
 });
 ```
+
+<Warning>
+  Only `"mainnet"` is deployed. The `"testnet"` entry is a guarded placeholder (Uniswap v3 doesn't exist on Robinhood Chain testnet) — the SDK throws a descriptive error if you select it. For development, fork mainnet with Anvil and pass a custom deployment object (below).
+</Warning>
 
 Three namespaces do all the work:
 
@@ -71,8 +75,12 @@ const info = await hood.read.getTokenInfo(tokens[0]);
 const state = await hood.read.getCurveState(tokens[0]);
 // → { virtualEth, virtualToken, realTokensLeft, realEth, creator, graduated, migrated }
 
-// Protocol-wide fee config (live, in basis points)
+// Protocol-wide fee config in basis points. The fees are immutable
+// on-chain, so this is safe to fetch once and cache.
 const { protocolFeeBps, creatorFeeBps, totalFeeBps } = await hood.read.getFees();
+
+// Creator's share of post-graduation LP fees (3000 bps = 30%; also immutable)
+const share = await hood.read.lockerCreatorShareBps();
 ```
 
 ## Quoting
@@ -184,7 +192,7 @@ const owed = await hood.read.creatorFeesOwed(token);
 await hood.write.claimCreatorFees(token);
 await hood.write.claimProtocolFees(); // pays the treasury
 
-// Harvest locked-LP swap fees for a graduated token (50/50 creator/treasury)
+// Harvest locked-LP swap fees for a graduated token (30/70 creator/treasury)
 const locker = await hood.read.locker();
 await hood.write.collectFees(locker, token);
 
@@ -244,7 +252,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 
 <AccordionGroup>
   <Accordion title="hood.read — all methods">
-    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `locker()`, `treasury()`, `weth()`, `positionManager()`
+    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `lockerCreatorShareBps()`, `locker()`, `treasury()`, `weth()`, `positionManager()`
   </Accordion>
   <Accordion title="hood.write — all methods">
     `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)` — trade `opts`: `{ slippageBps?: number; deadline?: bigint }`

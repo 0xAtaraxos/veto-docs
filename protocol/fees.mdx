@@ -32,7 +32,7 @@ Taken in ETH on every buy and sell, and split:
 Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Claim functions are callable by anyone, but funds only ever go to the registered recipient (the creator's fee address, or the treasury).
 
 <Info>
-  Fee rates are adjustable by protocol governance within a **hard-coded cap of 5% total** — the contract physically cannot charge more. Current rates: 0.7% + 0.3% = 1%.
+  Fee rates are **immutable**: 0.7% + 0.3% = 1%, fixed forever when the contract was deployed. There is no function to change them — not even for the protocol owner. (A 5% total cap was additionally enforced at construction.)
 </Info>
 
 ## After graduation: Uniswap v3 pool fees
@@ -41,10 +41,10 @@ Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees
 
 | Recipient | Share |
 | --- | --- |
-| Token creator | 50% |
-| Protocol treasury | 50% |
+| Token creator | 30% |
+| Protocol treasury | 70% |
 
-This split is immutable — set once at deployment and not adjustable by anyone.
+This split is immutable and, by construction, always identical to the bonding-curve fee ratio: the FeeLocker derives its share from the launchpad's fixed 0.7%/0.3% split at deployment, so curve fees and post-graduation fees can never drift apart.
 
 ## Gas
 

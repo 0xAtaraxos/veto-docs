@@ -42,27 +42,29 @@ flowchart LR
     LP -- deploys --> T["HoodToken (ERC-20 + permit)"]
     LP -- "migrate() after graduation" --> UNI["Uniswap v3 pool (1% tier)"]
     LP -- "LP position NFT" --> FL[FeeLocker]
-    FL -- "collectFees(): 50/50" --> Creator2[Creator] & Treasury
+    FL -- "collectFees(): 30/70" --> Creator2[Creator] & Treasury
 ```
 
 | Contract | Role |
 | --- | --- |
 | **HoodLaunchpad** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
 | **HoodToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
-| **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees 50/50 creator/treasury. |
+| **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees 30% creator / 70% treasury (mirrors the curve fee ratio). |
 
 Only the launchpad address is needed to integrate — the FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
 
 ## Contract addresses
 
-<Warning>
-  The hoodstar.fun contracts are **not yet deployed** — launchpad addresses will be published here at launch. Until then, develop against a local fork or the testnet once live, or run the contracts yourself with the deploy scripts.
-</Warning>
+Live on mainnet since block 9,651,439 (2026-07-14), source-verified on Blockscout:
 
 | Contract | Mainnet (4663) |
 | --- | --- |
-| HoodLaunchpad | *To be announced* |
-| FeeLocker | *To be announced* |
+| HoodLaunchpad | [`0x46476743520DCEE36919D8a826F7f3D82c65c1F0`](https://robinhoodchain.blockscout.com/address/0x46476743520DCEE36919D8a826F7f3D82c65c1F0) |
+| FeeLocker | [`0x9d86E293CB8C033694F21A7c1fA63e97Dd2f98de`](https://robinhoodchain.blockscout.com/address/0x9d86E293CB8C033694F21A7c1fA63e97Dd2f98de) |
+
+<Note>
+  There is no testnet deployment: Uniswap v3 is not deployed on Robinhood Chain testnet, which the protocol depends on for graduation. Develop against a local Anvil fork of mainnet instead.
+</Note>
 
 Canonical Robinhood Chain infrastructure the protocol builds on:
 
@@ -81,6 +83,7 @@ SALE_SUPPLY      =   793_100_000 × 1e18   // sold on the curve
 POOL_SUPPLY      =   206_900_000 × 1e18   // reserved for Uniswap LP
 VIRTUAL_TOKEN_0  = 1_073_000_000 × 1e18   // initial virtual token reserve
 virtualEth0      = 1.6 ETH                // initial virtual ETH reserve (deploy parameter)
-Trade fee        = 100 bps (70 protocol / 30 creator), hard cap 500 bps
+Trade fee        = 100 bps (70 protocol / 30 creator) — immutable, no setter
+LP fee split     = 3000 bps creator share, derived from the trade-fee ratio
 Uniswap pool     = 1% fee tier (10000), full-range position
 ```

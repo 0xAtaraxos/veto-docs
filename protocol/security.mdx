@@ -17,15 +17,14 @@ Every launched token is a minimal ERC-20 (plus EIP-2612 permit) with the entire 
 
 ## The launchpad contract
 
-The launchpad holds curve funds and enforces the lifecycle. Its owner (the protocol) has exactly **three** powers:
+The launchpad holds curve funds and enforces the lifecycle. Its owner (the protocol) has exactly **two** powers:
 
 | Power | Bound |
 | --- | --- |
-| Adjust trade fees | Hard-capped at 5% total, in the contract |
 | Change the treasury address | Only affects where protocol fees go |
-| Set the FeeLocker address | One-time, at deployment |
+| Set the FeeLocker address | One-time, at deployment (already done) |
 
-That's the complete list. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
+That's the complete list. Trade fees are **immutable** — fixed at deployment with no setter, so not even the owner can change them. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
 
 ## Locked liquidity
 
@@ -33,7 +32,7 @@ At graduation, the Uniswap v3 LP position is minted directly into the **FeeLocke
 
 - **Immutable** — no upgrade path.
 - **Ownerless** — no admin functions.
-- **Withdrawal-free** — the code contains no function that can move the LP position out. Only swap *fees* can be collected, and those are split 50/50 creator/treasury by immutable configuration.
+- **Withdrawal-free** — the code contains no function that can move the LP position out. Only swap *fees* can be collected, and those are split 30% creator / 70% treasury — an immutable ratio derived at deployment from the launchpad's own fixed fee split.
 
 Locked means locked: the liquidity is provably unreachable by anyone, forever.
 
