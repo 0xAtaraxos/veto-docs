@@ -1,10 +1,10 @@
 ---
 title: "Developer Overview"
-description: "Build on hoodstar.fun: chain details, contract architecture, addresses, and integration paths."
+description: "Build on veto.fun: chain details, contract architecture, addresses, and integration paths."
 icon: "code"
 ---
 
-Everything on hoodstar.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, or entire alternative frontends. No API key required.
+Everything on veto.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, or entire alternative frontends. No API key required.
 
 ## Two ways to integrate
 
@@ -37,7 +37,7 @@ Three contracts run the whole protocol:
 
 ```mermaid
 flowchart LR
-    Creator -- "createToken()" --> LP[HoodstarDotFun]
+    Creator -- "createToken()" --> LP[VetoDotFun]
     Trader -- "buy / sell" --> LP
     LP -- deploys --> T["HoodToken (ERC-20 + permit)"]
     LP -- "migrate() after graduation" --> UNI["Uniswap v3 pool (1% tier)"]
@@ -47,7 +47,7 @@ flowchart LR
 
 | Contract | Role |
 | --- | --- |
-| **HoodstarDotFun** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
+| **VetoDotFun** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
 | **HoodToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
 | **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
 
@@ -59,7 +59,7 @@ Live on mainnet since block 9,824,773 (2026-07-14), source-verified on Blockscou
 
 | Contract | Mainnet (4663) |
 | --- | --- |
-| HoodstarDotFun | [`0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A`](https://robinhoodchain.blockscout.com/address/0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A) |
+| VetoDotFun | [`0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A`](https://robinhoodchain.blockscout.com/address/0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A) |
 | FeeLocker | [`0x98f721ca716214c425DCF9D7c098A054869aa85E`](https://robinhoodchain.blockscout.com/address/0x98f721ca716214c425DCF9D7c098A054869aa85E) |
 
 <Note>

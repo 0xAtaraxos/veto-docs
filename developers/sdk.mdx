@@ -1,10 +1,10 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on hoodstar.fun with @hoodstudio/hoodstar-sdk: typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on veto.fun with @hoodstudio/hoodstar-sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@hoodstudio/hoodstar-sdk` is the official TypeScript SDK for the hoodstar.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
+`@hoodstudio/hoodstar-sdk` is the official TypeScript SDK for the veto.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
 
 ```bash
 npm install @hoodstudio/hoodstar-sdk viem
@@ -16,12 +16,12 @@ npm install @hoodstudio/hoodstar-sdk viem
 
 ## Setup
 
-Create a viem client pair and pass it to `createHoodstar`. The SDK exports ready-made chain definitions for Robinhood Chain mainnet and testnet.
+Create a viem client pair and pass it to `createVeto`. The SDK exports ready-made chain definitions for Robinhood Chain mainnet and testnet.
 
 ```ts
 import { createPublicClient, createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { createHoodstar, robinhoodMainnet } from "@hoodstudio/hoodstar-sdk";
+import { createVeto, robinhoodMainnet } from "@hoodstudio/hoodstar-sdk";
 
 const publicClient = createPublicClient({
   chain: robinhoodMainnet,
@@ -34,7 +34,7 @@ const walletClient = createWalletClient({
   account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`),
 });
 
-const hood = createHoodstar({
+const hood = createVeto({
   publicClient,
   walletClient, // optional; omit for read-only usage
   network: "mainnet",
@@ -54,7 +54,7 @@ Three namespaces do all the work:
 <Note>
   **Local development:** you can point the SDK at any deployment (e.g. an Anvil fork) by passing a deployment object instead of a network name:
   ```ts
-  const hood = createHoodstar({
+  const hood = createVeto({
     publicClient,
     walletClient,
     network: { chain, launchpad: "0x…", deployBlock: 0n },
@@ -116,7 +116,7 @@ const onchain = await hood.read.quoteBuy(token, parseEther("1"));
 
 ```ts
 import { parseEventLogs } from "viem";
-import { hoodstarDotFunAbi } from "@hoodstudio/hoodstar-sdk";
+import { vetoDotFunAbi } from "@hoodstudio/hoodstar-sdk";
 
 const hash = await hood.write.createToken({
   name: "My Star",
@@ -127,7 +127,7 @@ const hash = await hood.write.createToken({
 
 const receipt = await publicClient.waitForTransactionReceipt({ hash });
 const [created] = parseEventLogs({
-  abi: hoodstarDotFunAbi,
+  abi: vetoDotFunAbi,
   logs: receipt.logs,
   eventName: "TokenCreated",
 });
@@ -257,7 +257,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 | `CurveClosed` | Token already graduated; trade it on Uniswap instead |
 | `CurveStillOpen` | `migrate` called before graduation |
 | `AlreadyMigrated` | `migrate` called twice |
-| `UnknownToken` | Address is not a hoodstar.fun launch |
+| `UnknownToken` | Address is not a veto.fun launch |
 | `ZeroAmount` | Trade amount was zero |
 | `NotFeeRecipient` | `setFeeRecipient` from a non-recipient address |
 
@@ -274,7 +274,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
     `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `totalFeeBpsOf(state)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
   </Accordion>
   <Accordion title="ABIs">
-    `hoodstarDotFunAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing. (`hoodLaunchpadAbi` remains as a deprecated alias of `hoodstarDotFunAbi`.)
+    `vetoDotFunAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing. (`hoodLaunchpadAbi` remains as a deprecated alias of `vetoDotFunAbi`.)
   </Accordion>
 </AccordionGroup>
 

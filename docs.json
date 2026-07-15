@@ -1,20 +1,20 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "hoodstar.fun",
-  "description": "hoodstar.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
+  "name": "veto.fun",
+  "description": "veto.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
   "colors": {
     "primary": "#A7D106",
     "light": "#CCFF07",
     "dark": "#A7D106"
   },
   "logo": {
-    "light": "/logo/hoodstar-wordmark-black.svg",
-    "dark": "/logo/hoodstar-wordmark-white.svg"
+    "light": "/logo/veto-wordmark-black.svg",
+    "dark": "/logo/veto-wordmark-white.svg"
   },
   "favicon": {
-    "light": "/logo/hoodstar-black.svg",
-    "dark": "/logo/hoodstar-white.svg"
+    "light": "/logo/veto-black.svg",
+    "dark": "/logo/veto-white.svg"
   },
   "appearance": {
     "default": "dark"
@@ -22,21 +22,21 @@
   "navbar": {
     "links": [
       {
-        "href": "https://discord.gg/hoodstar",
+        "href": "https://discord.gg/vetodotfun",
         "label": "Support"
       },
       {
-        "href": "https://hoodstar.fun",
+        "href": "https://veto.fun",
         "label": "Launch App"
       }
     ]
   },
   "footer": {
     "socials": {
-      "website": "https://hoodstar.fun",
-      "x": "https://x.com/hoodstardotfun",
-      "telegram": "https://t.me/hoodstardotfun",
-      "discord": "https://discord.gg/hoodstar"
+      "website": "https://veto.fun",
+      "x": "https://x.com/VetoDotFun",
+      "telegram": "https://t.me/vetodotfun",
+      "discord": "https://discord.gg/vetodotfun"
     }
   },
   "navigation": {
@@ -50,7 +50,7 @@
             "pages": [
               "index",
               "introduction/how-it-works",
-              "introduction/star-token",
+              "introduction/veto-token",
               "introduction/official-links",
               "introduction/faq"
             ]

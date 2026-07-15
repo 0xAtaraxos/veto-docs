@@ -1,12 +1,12 @@
-# hoodstar-docs
+# veto-docs
 
-Official documentation for [hoodstar.fun](https://hoodstar.fun) — the meme coin launchpad on Robinhood Chain. Built with [Mintlify](https://mintlify.com).
+Official documentation for [veto.fun](https://veto.fun) — the meme coin launchpad on Robinhood Chain. Built with [Mintlify](https://mintlify.com).
 
 ## Structure
 
 - `docs.json` — site config (branding, colors, navigation)
 - `index.mdx` — landing page
-- `introduction/` — how it works, $STAR token, links, FAQ
+- `introduction/` — how it works, $VETO token, links, FAQ
 - `guides/` — connect wallet, launch a token, trading, creator rewards
 - `protocol/` — bonding curve math, graduation, fees, security model
 - `developers/` — chain/contract overview, `@hoodstudio/hoodstar-sdk` guide, contract reference
@@ -23,5 +23,5 @@ mint dev
 ## Things to update at launch
 
 - Contract addresses in `developers/overview.mdx` and `developers/contracts.mdx`
-- $STAR contract address in `introduction/star-token.mdx`
+- $VETO contract address in `introduction/veto-token.mdx`
 - Audit report link in `protocol/security.mdx`
