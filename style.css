@@ -1,0 +1,42 @@
+/* Themed scrollbars — thin, rounded, brand-neutral instead of browser grey.
+   Mintlify injects any .css file in the repo. Dark mode = html.dark. */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c9c4bc transparent;
+}
+html.dark * {
+  scrollbar-color: #2b2b2c transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9c4bc;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f2a63a;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #2b2b2c;
+  background-clip: padding-box;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #f2a63a;
+  background-clip: padding-box;
+}
