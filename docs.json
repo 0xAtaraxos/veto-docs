@@ -4,18 +4,15 @@
   "name": "veto.fun",
   "description": "veto.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
   "colors": {
-    "primary": "#A7D106",
-    "light": "#CCFF07",
-    "dark": "#A7D106"
+    "primary": "#F2A63A",
+    "light": "#FFC46B",
+    "dark": "#B9770F"
   },
   "logo": {
-    "light": "/logo/veto-wordmark-black.svg",
-    "dark": "/logo/veto-wordmark-white.svg"
+    "light": "/logo/veto-mark-black.png",
+    "dark": "/logo/veto-mark-white.png"
   },
-  "favicon": {
-    "light": "/logo/veto-black.svg",
-    "dark": "/logo/veto-white.svg"
-  },
+  "favicon": "/favicon.png",
   "appearance": {
     "default": "dark"
   },
@@ -49,6 +46,7 @@
             "group": "Introduction",
             "pages": [
               "index",
+              "introduction/why",
               "introduction/how-it-works",
               "introduction/veto-token",
               "introduction/official-links",

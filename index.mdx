@@ -1,53 +1,85 @@
 ---
 title: "Welcome to veto.fun"
 sidebarTitle: "Welcome"
-description: "veto.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever."
+description: "veto.fun is the memecoin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever."
 icon: "star"
 ---
 
-**veto.fun** is a meme coin launchpad built natively for **Robinhood Chain**, an Arbitrum Orbit L2 with ETH as gas. Anyone can launch a token in seconds for a flat 0.001 ETH, every token trades on the same fair bonding curve, and successful tokens graduate automatically into a Uniswap v3 pool whose liquidity is locked forever.
+<video
+  autoPlay
+  muted
+  loop
+  playsInline
+  src="/videos/banner-3.mp4"
+  style={{ width: '100%', display: 'block' }}
+/>
+
+**veto.fun** is the memecoin launchpad on **Robinhood Chain**. Launch in one transaction, trade on one fair curve, and graduate into liquidity that's locked forever. **You hold the veto. The market decides the rest.**
+
+This section is the non-technical tour. If you build things, skip straight to the [developer docs](/developers/overview).
 
 <CardGroup cols={2}>
-  <Card title="Launch in seconds" icon="rocket" href="/guides/launch-a-token">
-    Flat 0.001 ETH creation fee. Pick a name, ticker, and image, and your token is live and tradable in one transaction. Optionally make the first buy yourself.
+  <Card title="Why did we build this?" icon="hammer" href="/introduction/why">
+    *Another* launchpad? Yes. Here's the honest answer.
   </Card>
 
-  <Card title="Fair by construction" icon="scale-balanced" href="/protocol/bonding-curve">
-    Every token starts on the identical constant-product bonding curve. No presales, no team allocations, no insider pricing. The creator buys at the same price as everyone else.
+  <Card title="How it works" icon="diagram-project" href="/introduction/how-it-works">
+    Launch, curve, graduation, locked forever. One page, one minute.
   </Card>
 
-  <Card title="Graduate to Uniswap" icon="arrow-trend-up" href="/protocol/graduation">
-    When the curve sells out, the token migrates to a Uniswap v3 pool on Robinhood Chain. The LP position is locked in an immutable vault, so liquidity can never be pulled.
+  <Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
+    0.001 ETH, one transaction, no gatekeeping.
   </Card>
 
-  <Card title="Creators keep earning" icon="coins" href="/guides/creator-rewards">
-    Creators earn 0.3% of every bonding-curve trade, and 30% of all Uniswap swap fees after graduation, forever.
+  <Card title="$VETO" icon="star" href="/introduction/veto-token">
+    The official token. 50% of every fee buys it back.
   </Card>
 </CardGroup>
 
-## How it works, in one minute
+{/* Drop a capture at /images/app-preview.png (dark theme, token page with a
+    live chart, ~2400×1350) and uncomment:
 
-1. **Launch.** A creator deploys a token with a fixed supply of 1 billion. The full supply is held by the protocol, so nobody gets free tokens.
-2. **Trade on the curve.** 793.1 million tokens are sold on a constant-product bonding curve. Price starts low and rises deterministically with every buy. A 1% fee applies to each trade.
-3. **Graduate.** Once all curve supply is sold, trading on the curve closes. The raised ETH plus the reserved 206.9 million tokens seed a full-range Uniswap v3 pool, and the LP position is locked forever.
-4. **Trade anywhere.** After graduation the token is a standard ERC-20 in a normal Uniswap v3 pool, tradable by any wallet, aggregator, or bot on Robinhood Chain.
+<Frame caption="A live token page: bonding curve chart, trades, and the road to graduation.">
+  <img src="/images/app-preview.png" alt="The veto.fun app showing a token page with live chart and trades" />
+</Frame>
+*/}
+
+## The promise
+
+Three things make this launchpad worth your time, and none of them are policy. They're properties of the contracts:
+
+<CardGroup cols={3}>
+  <Card title="One curve for everyone" icon="scale-balanced" href="/protocol/bonding-curve">
+    Creators buy at the same price as you. No presales, no team bags. The contract has no way to do it.
+  </Card>
+
+  <Card title="Liquidity locked forever" icon="lock" href="/protocol/graduation">
+    Graduated liquidity is minted into a vault with no withdrawal function. Nobody can pull it. Not even us.
+  </Card>
+
+  <Card title="Creators keep earning" icon="coins" href="/guides/creator-rewards">
+    0.3% of every curve trade and 30% of Uniswap fees after graduation, for as long as the coin trades.
+  </Card>
+</CardGroup>
 
 ## Who is this for?
 
+Tldr: *everyone*. But here's the breakdown.
+
 <CardGroup cols={3}>
   <Card title="Creators" icon="wand-magic-sparkles" href="/guides/launch-a-token">
-    Launch a token for 0.001 ETH and earn a share of every trade it ever makes.
+    Launch for 0.001 ETH and earn a cut of every trade your token ever makes.
   </Card>
 
   <Card title="Traders" icon="chart-line-up" href="/guides/trading">
-    Discover new tokens early, trade with transparent on-chain pricing, and track everything with live charts.
+    Find tokens early, trade on transparent on-chain pricing, watch it all on live charts.
   </Card>
 
   <Card title="Developers" icon="code" href="/developers/overview">
-    Integrate with the open contracts, or build bots and indexers with the TypeScript SDK.
+    Open contracts, a TypeScript SDK, and nothing stopping your bots.
   </Card>
 </CardGroup>
 
 <Note>
-  veto.fun is fully non-custodial. Your keys, your coins: the platform can never touch your funds, mint extra supply, pause trading, or withdraw locked liquidity. See [Security & trust model](/protocol/security).
+  veto.fun is fully non-custodial. Your keys, your coins: the platform can never touch your funds, mint extra supply, pause trading, or withdraw locked liquidity. Don't take our word for it. See the [Security & trust model](/protocol/security).
 </Note>

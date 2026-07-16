@@ -89,4 +89,4 @@ Creation fee     = 0.001 ETH flat                      // current global config
 Uniswap pool     = 1% fee tier (10000), full-range position
 ```
 
-The three fee values form the global, owner-tunable config (hard-capped at 5% trade fee / 0.1 ETH creation fee). Each token snapshots the config at `createToken` — read a token's own fees from its `CurveState`, not from the global config, which only tells you what *future* launches will pay.
+The three fee values form the global, owner-tunable config (hard-capped at 5% trade fee / 0.1 ETH creation fee). Each token snapshots the config at `createToken`: read a token's own fees from its `CurveState`, not from the global config, which only tells you what *future* launches will pay.

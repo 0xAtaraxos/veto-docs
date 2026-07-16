@@ -77,7 +77,7 @@ const state = await hood.read.getCurveState(tokens[0]);
 //     protocolFeeBps, creatorFeeBps, creatorLpShareBps }  ← the token's frozen fee snapshot
 
 // The GLOBAL fee config (owner-tunable; what FUTURE launches will snapshot).
-// For a specific token's fees, use its CurveState snapshot — those never change.
+// For a specific token's fees, use its CurveState snapshot; those never change.
 const { protocolFeeBps, creatorFeeBps, totalFeeBps, creatorLpShareBps, creationFee } =
   await hood.read.getFees();
 
@@ -96,7 +96,7 @@ You can quote **on-chain** (source of truth) or **client-side**. The SDK's `math
 import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate, totalFeeBpsOf } from "@hoodstudio/hoodstar-sdk";
 
 const state = await hood.read.getCurveState(token);
-const totalFeeBps = totalFeeBpsOf(state); // from the token's own snapshot — no extra RPC call
+const totalFeeBps = totalFeeBpsOf(state); // from the token's own snapshot; no extra RPC call
 
 // Instant, local, exact
 const q = quoteBuy(state, totalFeeBps, parseEther("1"));
@@ -112,7 +112,7 @@ const onchain = await hood.read.quoteBuy(token, parseEther("1"));
 
 ## Launching a token
 
-`createToken` deploys the ERC-20 and opens its curve. The flat creation fee (0.001 ETH under the current config) is read live and added to the transaction value automatically, so `devBuyEth` is exactly the dev buy. Recover the token address from the `TokenCreated` event in the receipt — the event also carries the token's frozen fee snapshot:
+`createToken` deploys the ERC-20 and opens its curve. The flat creation fee (0.001 ETH under the current config) is read live and added to the transaction value automatically, so `devBuyEth` is exactly the dev buy. Recover the token address from the `TokenCreated` event in the receipt; the event also carries the token's frozen fee snapshot:
 
 ```ts
 import { parseEventLogs } from "viem";
@@ -204,7 +204,7 @@ await hood.write.claimCreatorFeesBatch([tokenA, tokenB, tokenC]);
 // Treasury only
 await hood.write.claimProtocolFees();
 
-// Harvest locked-LP swap fees for a graduated token — recipient, treasury,
+// Harvest locked-LP swap fees for a graduated token; recipient, treasury,
 // or claim authority; split at the token's snapshotted ratio
 const locker = await hood.read.locker();
 await hood.write.collectFees(locker, token);

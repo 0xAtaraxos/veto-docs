@@ -21,14 +21,14 @@ The launchpad holds curve funds and enforces the lifecycle. Its owner (the proto
 
 | Power | Bound |
 | --- | --- |
-| Tune the global fee config | Hard caps in the contract (≤5% trade fee, ≤0.1 ETH creation fee); affects **future launches only** — every existing token keeps the fee snapshot taken at its creation, forever |
+| Tune the global fee config | Hard caps in the contract (≤5% trade fee, ≤0.1 ETH creation fee); affects **future launches only**, since every existing token keeps the fee snapshot taken at its creation, forever |
 | Rotate the claim-authority wallet | Can only *trigger* payouts; funds always flow to the recorded recipients |
 | Change the treasury address | Only affects where protocol fees go |
 | Set the FeeLocker address | One-time, at deployment (already done) |
 
-That's the complete list. **No token's fees can ever be changed after launch** — the snapshot model means fee changes cannot be applied retroactively, by anyone. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
+That's the complete list. **No token's fees can ever be changed after launch.** The snapshot model means fee changes cannot be applied retroactively, by anyone. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
 
-Fee claims are permission-gated to their own beneficiaries: creator fees can be paid out only by the fee recipient or the platform's claimer service (which distributes to recipients in batches), and protocol fees only by the treasury. No gate lets anyone redirect funds — payouts always go to the recorded recipient.
+Fee claims are permission-gated to their own beneficiaries: creator fees can be paid out only by the fee recipient or the platform's claimer service (which distributes to recipients in batches), and protocol fees only by the treasury. No gate lets anyone redirect funds; payouts always go to the recorded recipient.
 
 ## Locked liquidity
 
@@ -36,7 +36,7 @@ At graduation, the Uniswap v3 LP position is minted directly into the **FeeLocke
 
 - **Immutable.** No upgrade path.
 - **Ownerless.** No admin functions.
-- **Withdrawal-free.** The code contains no function that can move the LP position out. Only swap *fees* can be collected (by the token's fee recipient, the treasury, or the platform's claimer service), and those are split creator/treasury at the ratio snapshotted into the token at launch — 30/70 for tokens launched under the current config, unchangeable per token afterwards.
+- **Withdrawal-free.** The code contains no function that can move the LP position out. Only swap *fees* can be collected (by the token's fee recipient, the treasury, or the platform's claimer service), and those are split creator/treasury at the ratio snapshotted into the token at launch: 30/70 for tokens launched under the current config, unchangeable per token afterwards.
 
 Locked means locked: the liquidity is provably unreachable by anyone, forever.
 
