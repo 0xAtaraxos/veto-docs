@@ -80,20 +80,6 @@
             ]
           }
         ]
-      },
-      {
-        "tab": "Developers",
-        "icon": "code",
-        "groups": [
-          {
-            "group": "Developers",
-            "pages": [
-              "developers/overview",
-              "developers/sdk",
-              "developers/contracts"
-            ]
-          }
-        ]
       }
     ]
   }
