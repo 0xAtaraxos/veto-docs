@@ -9,7 +9,7 @@ Official documentation for [veto.fun](https://veto.fun) — the meme coin launch
 - `introduction/` — how it works, $VETO token, links, FAQ
 - `guides/` — connect wallet, launch a token, trading, creator rewards
 - `protocol/` — bonding curve math, graduation, fees, security model
-- `developers/` — chain/contract overview, `@hoodstudio/hoodstar-sdk` guide, contract reference
+- `developers/` — chain/contract overview, `@vetostudio/veto-sdk` guide, contract reference
 - `legal/` — terms, privacy, risk disclosure
 - `logo/` — brand assets (gold star, `#F0B90B`)
 

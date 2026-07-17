@@ -1,6 +1,6 @@
 ---
 title: "Contract Reference"
-description: "The veto.fun smart contracts (VetoDotFun, HoodToken, and FeeLocker): functions, events, and errors."
+description: "The veto.fun smart contracts (VetoDotFun, VetoCurveToken, and FeeLocker): functions, events, and errors."
 icon: "file-contract"
 ---
 
@@ -21,7 +21,7 @@ function createToken(
 ) external payable returns (address token);
 ```
 
-Deploys a `HoodToken` and opens its curve. `msg.value` must cover the flat creation fee (read it from `feeConfig()`; currently 0.001 ETH); any ETH beyond it executes an optional dev buy at the public starting price, with `minTokensOut` protecting against front-running. The current global fee config is snapshotted into the token's `CurveState`; its fees never change afterwards. Emits `TokenCreated` (which carries the snapshot).
+Deploys a `VetoCurveToken` and opens its curve. `msg.value` must cover the flat creation fee (read it from `feeConfig()`; currently 0.001 ETH); any ETH beyond it executes an optional dev buy at the public starting price, with `minTokensOut` protecting against front-running. The current global fee config is snapshotted into the token's `CurveState`; its fees never change afterwards. Emits `TokenCreated` (which carries the snapshot).
 
 ### Trading
 
@@ -117,7 +117,7 @@ event ClaimAuthoritySet(address indexed authority);
 
 `CurveClosed`, `CurveStillOpen`, `AlreadyMigrated`, `Expired`, `SlippageExceeded`, `UnknownToken`, `ZeroAmount`, `ZeroAddress`, `FeeTooHigh`, `NotFeeRecipient`, `NotTreasury`, `InsufficientCreationFee`, `LockerNotSet`, `LockerAlreadySet`, `EthTransferFailed`, `OnlyWeth`, `NotPool`
 
-## HoodToken
+## VetoCurveToken
 
 The per-launch ERC-20, deployed by `createToken`:
 
@@ -155,11 +155,11 @@ All rounding favors the pool (`Math.ceilDiv` on reserve division) so the invaria
 
 ## Deployed addresses
 
-Live on Robinhood Chain mainnet (4663) since block 9,824,773, source-verified on Blockscout:
+Live on Robinhood Chain mainnet (4663) since block 12,262,096, source-verified on Blockscout:
 
 | Contract | Address |
 | --- | --- |
-| VetoDotFun | [`0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A`](https://robinhoodchain.blockscout.com/address/0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A) |
-| FeeLocker | [`0x98f721ca716214c425DCF9D7c098A054869aa85E`](https://robinhoodchain.blockscout.com/address/0x98f721ca716214c425DCF9D7c098A054869aa85E) |
+| VetoDotFun | [`0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885`](https://robinhoodchain.blockscout.com/address/0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885) |
+| FeeLocker | [`0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1`](https://robinhoodchain.blockscout.com/address/0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1) |
 
 See [Developer Overview](/developers/overview) for the canonical Uniswap and WETH addresses the protocol builds on.

@@ -10,7 +10,7 @@ Everything on veto.fun is on-chain and permissionlessly integrable. You can buil
 
 <CardGroup cols={2}>
   <Card title="TypeScript SDK" icon="js" href="/developers/sdk">
-    `@hoodstudio/hoodstar-sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
+    `@vetostudio/veto-sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
   </Card>
   <Card title="Raw contracts" icon="file-contract" href="/developers/contracts">
     Call the launchpad directly from Solidity, Foundry scripts, or any web3 library. Full function and error reference.
@@ -39,7 +39,7 @@ Three contracts run the whole protocol:
 flowchart LR
     Creator -- "createToken()" --> LP[VetoDotFun]
     Trader -- "buy / sell" --> LP
-    LP -- deploys --> T["HoodToken (ERC-20 + permit)"]
+    LP -- deploys --> T["VetoCurveToken (ERC-20 + permit)"]
     LP -- "migrate() after graduation" --> UNI["Uniswap v3 pool (1% tier)"]
     LP -- "LP position NFT" --> FL[FeeLocker]
     FL -- "collectFees(): 30/70" --> Creator2[Creator] & Treasury
@@ -48,19 +48,19 @@ flowchart LR
 | Contract | Role |
 | --- | --- |
 | **VetoDotFun** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
-| **HoodToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
+| **VetoCurveToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
 | **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
 
 Only the launchpad address is needed to integrate. The FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
 
 ## Contract addresses
 
-Live on mainnet since block 9,824,773 (2026-07-14), source-verified on Blockscout:
+Live on mainnet since block 12,262,096 (2026-07-17), source-verified on Blockscout:
 
 | Contract | Mainnet (4663) |
 | --- | --- |
-| VetoDotFun | [`0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A`](https://robinhoodchain.blockscout.com/address/0x152172137fa870a51DFde25a0dFc0bE9ad4dEE5A) |
-| FeeLocker | [`0x98f721ca716214c425DCF9D7c098A054869aa85E`](https://robinhoodchain.blockscout.com/address/0x98f721ca716214c425DCF9D7c098A054869aa85E) |
+| VetoDotFun | [`0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885`](https://robinhoodchain.blockscout.com/address/0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885) |
+| FeeLocker | [`0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1`](https://robinhoodchain.blockscout.com/address/0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1) |
 
 <Note>
   There is no testnet deployment: Uniswap v3 is not deployed on Robinhood Chain testnet, which the protocol depends on for graduation. Develop against a local Anvil fork of mainnet instead.

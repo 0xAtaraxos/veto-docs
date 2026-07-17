@@ -1,13 +1,13 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on veto.fun with @hoodstudio/hoodstar-sdk: typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on veto.fun with @vetostudio/veto-sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@hoodstudio/hoodstar-sdk` is the official TypeScript SDK for the veto.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
+`@vetostudio/veto-sdk` is the official TypeScript SDK for the veto.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
 
 ```bash
-npm install @hoodstudio/hoodstar-sdk viem
+npm install @vetostudio/veto-sdk viem
 ```
 
 <Info>
@@ -21,7 +21,7 @@ Create a viem client pair and pass it to `createVeto`. The SDK exports ready-mad
 ```ts
 import { createPublicClient, createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { createVeto, robinhoodMainnet } from "@hoodstudio/hoodstar-sdk";
+import { createVeto, robinhoodMainnet } from "@vetostudio/veto-sdk";
 
 const publicClient = createPublicClient({
   chain: robinhoodMainnet,
@@ -34,7 +34,7 @@ const walletClient = createWalletClient({
   account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`),
 });
 
-const hood = createVeto({
+const veto = createVeto({
   publicClient,
   walletClient, // optional; omit for read-only usage
   network: "mainnet",
@@ -47,14 +47,14 @@ const hood = createVeto({
 
 Three namespaces do all the work:
 
-- `hood.read`: typed views over the launchpad (curve state, quotes, fees, registry, pool info)
-- `hood.write`: transactions (throws if you didn't pass a `walletClient`)
-- `hood.watch` / `hood.backfill`: event streaming and historical indexing
+- `veto.read`: typed views over the launchpad (curve state, quotes, fees, registry, pool info)
+- `veto.write`: transactions (throws if you didn't pass a `walletClient`)
+- `veto.watch` / `veto.backfill`: event streaming and historical indexing
 
 <Note>
   **Local development:** you can point the SDK at any deployment (e.g. an Anvil fork) by passing a deployment object instead of a network name:
   ```ts
-  const hood = createVeto({
+  const veto = createVeto({
     publicClient,
     walletClient,
     network: { chain, launchpad: "0x…", deployBlock: 0n },
@@ -66,26 +66,26 @@ Three namespaces do all the work:
 
 ```ts
 // Enumerate tokens (newest last), then batch-fetch curve state in one RPC call
-const tokens = await hood.read.getTokens(0n, 50n);
-const states = await hood.read.getCurveStates(tokens);
+const tokens = await veto.read.getTokens(0n, 50n);
+const states = await veto.read.getCurveStates(tokens);
 
 // Per-token views
-const info = await hood.read.getTokenInfo(tokens[0]);
+const info = await veto.read.getTokenInfo(tokens[0]);
 // → { address, name, symbol, metadataURI }
-const state = await hood.read.getCurveState(tokens[0]);
+const state = await veto.read.getCurveState(tokens[0]);
 // → { virtualEth, virtualToken, realTokensLeft, realEth, creator, graduated, migrated,
 //     protocolFeeBps, creatorFeeBps, creatorLpShareBps }  ← the token's frozen fee snapshot
 
 // The GLOBAL fee config (owner-tunable; what FUTURE launches will snapshot).
 // For a specific token's fees, use its CurveState snapshot; those never change.
 const { protocolFeeBps, creatorFeeBps, totalFeeBps, creatorLpShareBps, creationFee } =
-  await hood.read.getFees();
+  await veto.read.getFees();
 
 // A token's snapshotted LP fee share (fixed at its creation)
-const share = await hood.read.creatorLpShareBpsOf(token);
+const share = await veto.read.creatorLpShareBpsOf(token);
 
 // Backend wallet allowed to trigger fee payouts (zero address = disabled)
-const authority = await hood.read.claimAuthority();
+const authority = await veto.read.claimAuthority();
 ```
 
 ## Quoting
@@ -93,9 +93,9 @@ const authority = await hood.read.claimAuthority();
 You can quote **on-chain** (source of truth) or **client-side**. The SDK's `math` module is a bit-exact mirror of the contract's rounding, so quotes match to the wei with zero RPC round-trips:
 
 ```ts
-import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate, totalFeeBpsOf } from "@hoodstudio/hoodstar-sdk";
+import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate, totalFeeBpsOf } from "@vetostudio/veto-sdk";
 
-const state = await hood.read.getCurveState(token);
+const state = await veto.read.getCurveState(token);
 const totalFeeBps = totalFeeBpsOf(state); // from the token's own snapshot; no extra RPC call
 
 // Instant, local, exact
@@ -107,7 +107,7 @@ const progress = curveProgressBps(state);     // 0–10000 (10000 = graduated)
 const remaining = ethToGraduate(state, totalFeeBps); // gross ETH to buy out the curve
 
 // Or ask the contract directly, identical results
-const onchain = await hood.read.quoteBuy(token, parseEther("1"));
+const onchain = await veto.read.quoteBuy(token, parseEther("1"));
 ```
 
 ## Launching a token
@@ -116,9 +116,9 @@ const onchain = await hood.read.quoteBuy(token, parseEther("1"));
 
 ```ts
 import { parseEventLogs } from "viem";
-import { vetoDotFunAbi } from "@hoodstudio/hoodstar-sdk";
+import { vetoDotFunAbi } from "@vetostudio/veto-sdk";
 
-const hash = await hood.write.createToken({
+const hash = await veto.write.createToken({
   name: "My Star",
   symbol: "MSTAR",
   metadataURI: "ipfs://Qm…",          // image + description, pinned to IPFS
@@ -135,7 +135,7 @@ const token = created.args.token; // args also include protocolFeeBps / creatorF
 ```
 
 <Note>
-  Every `hood.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash`. Await the receipt yourself with `publicClient.waitForTransactionReceipt`.
+  Every `veto.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash`. Await the receipt yourself with `publicClient.waitForTransactionReceipt`.
 </Note>
 
 ## Trading
@@ -144,14 +144,14 @@ const token = created.args.token; // args also include protocolFeeBps / creatorF
 
 ```ts
 const ethIn = parseEther("1");
-const q = quoteBuy(await hood.read.getCurveState(token), totalFeeBps, ethIn);
+const q = quoteBuy(await veto.read.getCurveState(token), totalFeeBps, ethIn);
 
 // Exact ETH in; slippage (default 1%) and deadline (default 5 min) built in
-const hash = await hood.write.buy(token, ethIn, q.tokensOut, { slippageBps: 100 });
+const hash = await veto.write.buy(token, ethIn, q.tokensOut, { slippageBps: 100 });
 await publicClient.waitForTransactionReceipt({ hash });
 
 // Or exact tokens out, refunding any excess ETH
-await hood.write.buyExactTokens(token, tokensWanted, maxEthIn);
+await veto.write.buyExactTokens(token, tokensWanted, maxEthIn);
 ```
 
 ### Selling
@@ -159,15 +159,15 @@ await hood.write.buyExactTokens(token, tokensWanted, maxEthIn);
 Tokens support EIP-2612, so the one-transaction permit path is the default choice:
 
 ```ts
-const balance = await hood.read.balanceOf(token, account.address);
-const sq = quoteSell(await hood.read.getCurveState(token), totalFeeBps, balance / 2n);
+const balance = await veto.read.balanceOf(token, account.address);
+const sq = quoteSell(await veto.read.getCurveState(token), totalFeeBps, balance / 2n);
 
 // One transaction: signs a permit, no separate approve needed
-await hood.write.sellWithPermit(token, balance / 2n, sq.ethOut);
+await veto.write.sellWithPermit(token, balance / 2n, sq.ethOut);
 
 // Classic two-step path also available:
-await hood.write.approve(token, amount);
-await hood.write.sell(token, amount, sq.ethOut, { slippageBps: 50 });
+await veto.write.approve(token, amount);
+await veto.write.sell(token, amount, sq.ethOut, { slippageBps: 50 });
 ```
 
 ## Graduation & migration
@@ -179,12 +179,12 @@ if (q.graduates) {
 }
 
 // After graduation, anyone can migrate. It's permissionless and free.
-await publicClient.waitForTransactionReceipt({ hash: await hood.write.migrate(token) });
+await publicClient.waitForTransactionReceipt({ hash: await veto.write.migrate(token) });
 
 // Inspect the resulting Uniswap v3 pool
-const pool = await hood.read.getPool(token);              // zero address until pool exists
-const { sqrtPriceX96, liquidity } = await hood.read.getPoolState(pool);
-const positionId = await hood.read.positionOf(token);     // locked LP NFT id (0 = not migrated)
+const pool = await veto.read.getPool(token);              // zero address until pool exists
+const { sqrtPriceX96, liquidity } = await veto.read.getPoolState(pool);
+const positionId = await veto.read.positionOf(token);     // locked LP NFT id (0 = not migrated)
 ```
 
 ## Claiming fees
@@ -193,24 +193,24 @@ Claims are gated but never redirectable: funds always go to the registered recip
 
 ```ts
 // Accrued but unclaimed creator fees for a token (in wei)
-const owed = await hood.read.creatorFeesOwed(token);
+const owed = await veto.read.creatorFeesOwed(token);
 
 // Fee recipient or claim authority only; pays the recipient
-await hood.write.claimCreatorFees(token);
+await veto.write.claimCreatorFees(token);
 
 // Airdrop mode (claim authority): pay many tokens' recipients in one tx
-await hood.write.claimCreatorFeesBatch([tokenA, tokenB, tokenC]);
+await veto.write.claimCreatorFeesBatch([tokenA, tokenB, tokenC]);
 
 // Treasury only
-await hood.write.claimProtocolFees();
+await veto.write.claimProtocolFees();
 
 // Harvest locked-LP swap fees for a graduated token; recipient, treasury,
 // or claim authority; split at the token's snapshotted ratio
-const locker = await hood.read.locker();
-await hood.write.collectFees(locker, token);
+const locker = await veto.read.locker();
+await veto.write.collectFees(locker, token);
 
 // Redirect your creator fee stream (only the current recipient can call this)
-await hood.write.setFeeRecipient(token, "0xNewRecipient…");
+await veto.write.setFeeRecipient(token, "0xNewRecipient…");
 ```
 
 ## Streaming events
@@ -218,7 +218,7 @@ await hood.write.setFeeRecipient(token, "0xNewRecipient…");
 The watch layer polls `eth_getLogs` over HTTP (Robinhood Chain's public RPC has no websocket), delivers events **at least once** in `(blockNumber, logIndex)` order, and gives you a cursor for crash-safe resumption:
 
 ```ts
-const stop = hood.watch(
+const stop = veto.watch(
   {
     onTokenCreated: (e) => console.log("new token", e.token, e.symbol, "by", e.creator),
     onTrade: (e) => console.log(e.token, e.isBuy ? "buy" : "sell", e.ethGross),
@@ -236,7 +236,7 @@ const stop = hood.watch(
 For historical indexing, `backfill` replays the full event history in chunked `eth_getLogs` calls and resolves with the last processed block:
 
 ```ts
-const lastBlock = await hood.backfill({
+const lastBlock = await veto.backfill({
   onTokenCreated: indexToken,
   onTrade: indexTrade,
 });
@@ -264,17 +264,17 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 ## Full API surface
 
 <AccordionGroup>
-  <Accordion title="hood.read: all methods">
+  <Accordion title="veto.read: all methods">
     `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `claimAuthority()`, `creatorLpShareBpsOf(token)`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `locker()`, `treasury()`, `weth()`, `positionManager()`
   </Accordion>
-  <Accordion title="hood.write: all methods">
+  <Accordion title="veto.write: all methods">
     `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimCreatorFeesBatch(tokens[])`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
     `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `totalFeeBpsOf(state)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
   </Accordion>
   <Accordion title="ABIs">
-    `vetoDotFunAbi`, `hoodTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing. (`hoodLaunchpadAbi` remains as a deprecated alias of `vetoDotFunAbi`.)
+    `vetoDotFunAbi`, `vetoTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing.
   </Accordion>
 </AccordionGroup>
 

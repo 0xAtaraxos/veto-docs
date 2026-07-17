@@ -72,6 +72,14 @@
             ]
           },
           {
+            "group": "Developers",
+            "pages": [
+              "developers/overview",
+              "developers/sdk",
+              "developers/contracts"
+            ]
+          },
+          {
             "group": "Legal",
             "pages": [
               "legal/terms-of-service",
