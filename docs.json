@@ -16,6 +16,21 @@
   "appearance": {
     "default": "dark"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#FBF7EE",
+      "dark": "#131118"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Pixelify Sans"
+    },
+    "body": {
+      "family": "Inter"
+    }
+  },
   "navbar": {
     "links": [
       {
@@ -48,7 +63,6 @@
               "index",
               "introduction/why",
               "introduction/how-it-works",
-              "introduction/maki-token",
               "introduction/official-links",
               "introduction/faq"
             ]

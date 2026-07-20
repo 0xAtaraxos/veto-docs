@@ -1,13 +1,39 @@
-/* Themed scrollbars — thin, rounded, brand-neutral instead of browser grey.
-   Mintlify injects any .css file in the repo. Dark mode = html.dark. */
+/* Maki pixel skin. Mintlify injects any .css file in the repo.
+   Dark mode = html.dark. Fonts are declared in docs.json; the @import is a
+   fallback so the pixel heading renders even if the config font fails. */
+
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap");
+
+/* every corner is square */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+/* pixel display type for headings, body stays Inter */
+h1,
+h2,
+h3 {
+  font-family: "Pixelify Sans", "Inter", system-ui, sans-serif !important;
+  letter-spacing: 0.01em;
+}
+
+/* the mascot stays crisp at any size */
+img[src*="maki-mark"],
+img[src*="favicon"] {
+  image-rendering: pixelated;
+}
+
+/* Themed scrollbars — thin, square, twilight instead of browser grey. */
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c9c4bc transparent;
+  scrollbar-color: #d8d2c4 transparent;
 }
 html.dark * {
-  scrollbar-color: #2b2b2c transparent;
+  scrollbar-color: #2e2839 transparent;
 }
 
 /* WebKit (Chrome, Safari, Edge) */
@@ -19,13 +45,12 @@ html.dark * {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9c4bc;
-  border-radius: 999px;
+  background: #d8d2c4;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ED5B25;
+  background: #ed5b25;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-corner {
@@ -33,10 +58,10 @@ html.dark * {
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  background: #2b2b2c;
+  background: #2e2839;
   background-clip: padding-box;
 }
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #ED5B25;
+  background: #ed5b25;
   background-clip: padding-box;
 }
