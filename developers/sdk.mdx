@@ -1,10 +1,10 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on veto.fun with @vetostudio/veto-sdk: typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on maki.finance with @vetostudio/veto-sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@vetostudio/veto-sdk` is the official TypeScript SDK for the veto.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
+`@vetostudio/veto-sdk` is the official TypeScript SDK for the maki.finance protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
 
 ```bash
 npm install @vetostudio/veto-sdk viem
@@ -257,7 +257,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 | `CurveClosed` | Token already graduated; trade it on Uniswap instead |
 | `CurveStillOpen` | `migrate` called before graduation |
 | `AlreadyMigrated` | `migrate` called twice |
-| `UnknownToken` | Address is not a veto.fun launch |
+| `UnknownToken` | Address is not a maki.finance launch |
 | `ZeroAmount` | Trade amount was zero |
 | `NotFeeRecipient` | `setFeeRecipient` from a non-recipient address |
 
