@@ -1,5 +1,5 @@
 ---
-title: "Developer Overview"
+title: "Developer overview"
 description: "Build on maki.finance: chain details, contract architecture, addresses, and integration paths."
 icon: "code"
 ---
@@ -10,7 +10,7 @@ Everything on maki.finance is on-chain and permissionlessly integrable. You can 
 
 <CardGroup cols={2}>
   <Card title="TypeScript SDK" icon="js" href="/developers/sdk">
-    `@vetostudio/veto-sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
+    `@maki-studio/sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
   </Card>
   <Card title="Raw contracts" icon="file-contract" href="/developers/contracts">
     Call the launchpad directly from Solidity, Foundry scripts, or any web3 library. Full function and error reference.
@@ -28,65 +28,70 @@ Everything on maki.finance is on-chain and permissionlessly integrable. You can 
 
 Robinhood Chain is an **Arbitrum Orbit L2**. Two practical consequences:
 
-- Blocks are fast and reorgs are effectively nonexistent, so confirmation counts of 0–1 are fine.
+- Blocks are fast and reorgs are effectively nonexistent, so confirmation counts of 0-1 are fine.
 - The public RPC is **HTTP only** (no `eth_subscribe` websocket). The SDK's event layer is built around chunked `eth_getLogs` polling for exactly this reason; for websockets you need a paid RPC provider.
 
 ## Architecture
 
-Three contracts run the whole protocol:
+There is no intermediate trading phase and no migration step. [`createToken`](/protocol/direct-listing) lists a token directly on **SushiSwap V3 or Uniswap v3** (the creator picks the [venue](/protocol/venues) per launch) in one transaction:
+
+1. deploys the ERC-20 (a CREATE2 salt is mined so the token always sorts above WETH),
+2. creates and initializes the WETH/token 1% pool at the global opening price (tick 203200),
+3. mints the **entire 1B supply** as one single-sided position spanning `[TICK_LOWER, startTick]` into that venue's fee locker, forever,
+4. optionally executes the creator's dev buy before anyone else can reach the pool.
+
+The venue is frozen into the token; a token lives on exactly one DEX. And because no liquidity was ever minted above `startTick`, the opening price is a permanent floor: sells can never push the price above it.
 
 ```mermaid
 flowchart LR
-    Creator -- "createToken()" --> LP[VetoDotFun]
-    Trader -- "buy / sell" --> LP
-    LP -- deploys --> T["VetoCurveToken (ERC-20 + permit)"]
-    LP -- "migrate() after graduation" --> UNI["Uniswap v3 pool (1% tier)"]
-    LP -- "LP position NFT" --> FL[FeeLocker]
-    FL -- "collectFees(): 30/70" --> Creator2[Creator] & Treasury
+    Creator -- "createToken(venue)" --> LP[MakiDotFun]
+    LP -- deploys --> T["MakiToken (ERC-20 + permit)"]
+    LP -- "pool + locked 1B position" --> POOL["SushiSwap V3 or Uniswap v3 pool (1% tier)"]
+    LP -- "position NFT" --> FL["MakiFeeLocker (one per venue)"]
+    Trader -- "buy / sell, native ETH" --> R[MakiSwapRouter] --> POOL
+    FL -- "collectFees(): 30/70 split" --> Creator2[Creator] & Treasury
 ```
 
 | Contract | Role |
 | --- | --- |
-| **VetoDotFun** | Singleton: token factory, all bonding curves, fee ledger, and Uniswap migrator in one contract. |
-| **VetoCurveToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
-| **FeeLocker** | Immutable, ownerless vault holding every graduated LP position forever; splits collected swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
+| **MakiDotFun** | Singleton launchpad and registry for both venues: token factory, pool creation, position locking, fee config, creation-fee ledger. |
+| **MakiToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
+| **MakiFeeLocker** | One per venue, byte-identical. Immutable, ownerless vault holding every launch's LP position forever; splits harvested swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
+| **MakiSwapRouter** | Stateless, ownerless, immutable ETH-in/ETH-out swapper working identically against pools on either venue. |
 
-Only the launchpad address is needed to integrate. The FeeLocker, treasury, WETH, and Uniswap position manager are all discoverable from it on-chain.
+Only the launchpad and swap router addresses are needed to integrate. The lockers, treasury, WETH, position managers, and factories are all discoverable from the launchpad on-chain.
+
+## Why MakiSwapRouter
+
+Uniswap v3 has a SwapRouter02 on this chain; Sushi does not. Sushi routes through RedSnwapper, whose calldata is an opaque route produced by Sushi's off-chain routing API, and a pool seconds old is not indexed yet, which is exactly when a launchpad needs trading to work. So MakiSwapRouter talks to the pool directly with its own swap callback: identical on both venues, live the instant the pool exists, no API and no route encoding. It takes and returns native ETH, and it only ever swaps against a pool it re-derived from a known factory.
 
 ## Contract addresses
 
-Live on mainnet since block 12,262,096 (2026-07-17), source-verified on Blockscout:
+Live on mainnet since block 29,588,143 (2026-08-06), source-verified on Blockscout:
 
 | Contract | Mainnet (4663) |
 | --- | --- |
-| VetoDotFun | [`0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885`](https://robinhoodchain.blockscout.com/address/0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885) |
-| FeeLocker | [`0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1`](https://robinhoodchain.blockscout.com/address/0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1) |
+| MakiDotFun | [`0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e`](https://robinhoodchain.blockscout.com/address/0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e) |
+| MakiFeeLocker (Sushi) | [`0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f`](https://robinhoodchain.blockscout.com/address/0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f) |
+| MakiFeeLocker (Uniswap) | [`0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86`](https://robinhoodchain.blockscout.com/address/0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86) |
+| MakiSwapRouter | [`0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d`](https://robinhoodchain.blockscout.com/address/0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d) |
+| Treasury / owner | [`0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096`](https://robinhoodchain.blockscout.com/address/0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096) |
 
 <Note>
-  There is no testnet deployment: Uniswap v3 is not deployed on Robinhood Chain testnet, which the protocol depends on for graduation. Develop against a local Anvil fork of mainnet instead.
+  There is no testnet deployment: neither DEX exists on Robinhood Chain testnet. Develop against a local Anvil fork of mainnet instead (`anvil --fork-url https://rpc.mainnet.chain.robinhood.com`).
 </Note>
-
-Canonical Robinhood Chain infrastructure the protocol builds on:
-
-| Contract | Address |
-| --- | --- |
-| Uniswap v3 Factory | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` |
-| Uniswap v3 NonfungiblePositionManager | `0x73991a25C818Bf1f1128dEAaB1492D45638DE0D3` |
-| Uniswap SwapRouter02 | `0xCaf681a66D020601342297493863E78C959E5cb2` |
-| WETH | `0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73` |
 
 ## Key protocol constants
 
 ```text
-TOTAL_SUPPLY     = 1_000_000_000 × 1e18   // per token
-SALE_SUPPLY      =   793_100_000 × 1e18   // sold on the curve
-POOL_SUPPLY      =   206_900_000 × 1e18   // reserved for Uniswap LP
-VIRTUAL_TOKEN_0  = 1_073_000_000 × 1e18   // initial virtual token reserve
-virtualEth0      = 1.6 ETH                // initial virtual ETH reserve (deploy parameter)
-Trade fee        = 100 bps (70 protocol / 30 creator)  // current global config
-LP fee split     = 3000 bps creator share              // current global config
-Creation fee     = 0.001 ETH flat                      // current global config
-Uniswap pool     = 1% fee tier (10000), full-range position
+TOTAL_SUPPLY       = 1_000_000_000 × 1e18   // per token, all of it in the locked position
+POOL_FEE           = 10000                  // 1% tier, both venues
+TICK_SPACING       = 200
+TICK_LOWER         = -887200                // bottom of the locked position
+startTick          = 203200                 // opening price: ≈667.46M tokens/ETH, ≈1.4982 ETH FDV
+Creation fee       = 0.001 ETH flat         // current global config
+Creator LP share   = 3000 bps (30%)         // current global config; rest to treasury
+Venue.UNISWAP = 0, Venue.SUSHI = 1
 ```
 
-The three fee values form the global, owner-tunable config (hard-capped at 5% trade fee / 0.1 ETH creation fee). Each token snapshots the config at `createToken`: read a token's own fees from its `CurveState`, not from the global config, which only tells you what *future* launches will pay.
+There is **no per-trade launchpad fee**. Protocol and creator revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the venue's FeeLocker and split at the token's snapshotted `creatorLpShareBps`. The global config (`creatorLpShareBps`, `creationFee`) is owner-tunable for future launches only: each token snapshots it at `createToken` and its split never changes. See [fees](/protocol/fees) and [security](/protocol/security).

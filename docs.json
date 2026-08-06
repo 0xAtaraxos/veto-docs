@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
   "name": "Maki",
-  "description": "Maki (maki.finance) is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
+  "description": "Maki (maki.finance) is the memecoin launchpad on Robinhood Chain. Launch a token in one transaction, straight into a live SushiSwap or Uniswap pool with liquidity locked forever.",
   "colors": {
     "primary": "#ED5B25",
     "light": "#FF8A50",
@@ -70,8 +70,8 @@
           {
             "group": "Protocol",
             "pages": [
-              "protocol/bonding-curve",
-              "protocol/graduation",
+              "protocol/direct-listing",
+              "protocol/venues",
               "protocol/fees",
               "protocol/security"
             ]

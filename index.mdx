@@ -1,7 +1,7 @@
 ---
 title: "Welcome to maki.finance"
 sidebarTitle: "Welcome"
-description: "maki.finance is the memecoin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever."
+description: "maki.finance is the memecoin launchpad on Robinhood Chain. Launch a token in one transaction, straight into a live SushiSwap pool with liquidity locked forever."
 icon: "star"
 ---
 
@@ -14,9 +14,9 @@ icon: "star"
   style={{ width: '100%', display: 'block' }}
 />
 
-**maki.finance** is the memecoin launchpad on **Robinhood Chain**. Launch in one transaction, trade on one fair curve, and graduate into liquidity that's locked forever. **You hold the keys. The market decides the rest.**
+**maki.finance** is the memecoin launchpad on **Robinhood Chain**. One transaction launches your token **straight into a live SushiSwap pool** (Uniswap v3 if you prefer) with the entire supply locked as liquidity forever. No bonding curve, no graduation, no waiting: it's a real DEX token from block one, visible to every major trading platform that watches SushiSwap. **You hold the keys. The market decides the rest.**
 
-This section is the non-technical tour. Building on maki.finance? Head to the [Developer docs](/developers/overview) for the TypeScript SDK (`@vetostudio/veto-sdk`) and the full contract reference.
+This section is the non-technical tour. Building on maki.finance? Head to the [Developer docs](/developers/overview) for the TypeScript SDK (`@maki-studio/sdk`) and the full contract reference.
 
 <CardGroup cols={2}>
   <Card title="Why did we build this?" icon="hammer" href="/introduction/why">
@@ -24,7 +24,7 @@ This section is the non-technical tour. Building on maki.finance? Head to the [D
   </Card>
 
   <Card title="How it works" icon="diagram-project" href="/introduction/how-it-works">
-    Launch, curve, graduation, locked forever. One page, one minute.
+    One transaction: token, pool, locked liquidity. One page, one minute.
   </Card>
 
   <Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
@@ -36,7 +36,7 @@ This section is the non-technical tour. Building on maki.finance? Head to the [D
 {/* Drop a capture at /images/app-preview.png (dark theme, token page with a
     live chart, ~2400×1350) and uncomment:
 
-<Frame caption="A live token page: bonding curve chart, trades, and the road to graduation.">
+<Frame caption="A live token page: chart, trades, and the trade widget.">
   <img src="/images/app-preview.png" alt="The maki.finance app showing a token page with live chart and trades" />
 </Frame>
 */}
@@ -46,16 +46,16 @@ This section is the non-technical tour. Building on maki.finance? Head to the [D
 Three things make this launchpad worth your time, and none of them are policy. They're properties of the contracts:
 
 <CardGroup cols={3}>
-  <Card title="One curve for everyone" icon="scale-balanced" href="/protocol/bonding-curve">
-    Creators buy at the same price as you. No presales, no team bags. The contract has no way to do it.
+  <Card title="Every launch opens equal" icon="scale-balanced" href="/protocol/direct-listing">
+    Same opening price for every token, and creators buy at it like everyone else. No presales, no team bags. The contract has no way to do it.
   </Card>
 
-  <Card title="Liquidity locked forever" icon="lock" href="/protocol/graduation">
-    Graduated liquidity is minted into a vault with no withdrawal function. Nobody can pull it. Not even us.
+  <Card title="Liquidity locked forever" icon="lock" href="/protocol/venues">
+    The entire supply is minted into a vault with no withdrawal function, in the launch transaction itself. Nobody can pull it. Not even us.
   </Card>
 
   <Card title="Creators keep earning" icon="coins" href="/guides/creator-rewards">
-    0.3% of every curve trade and 30% of Uniswap fees after graduation, for as long as the coin trades.
+    30% of the pool's swap fees, from the first trade, for as long as the coin trades.
   </Card>
 </CardGroup>
 
@@ -65,11 +65,11 @@ Tldr: *everyone*. But here's the breakdown.
 
 <CardGroup cols={3}>
   <Card title="Creators" icon="wand-magic-sparkles" href="/guides/launch-a-token">
-    Launch for 0.001 ETH and earn a cut of every trade your token ever makes.
+    Launch for 0.001 ETH and earn a cut of every trade your token ever makes, on any platform.
   </Card>
 
   <Card title="Traders" icon="chart-line-up" href="/guides/trading">
-    Find tokens early, trade on transparent on-chain pricing, watch it all on live charts.
+    Find tokens at their opening price, trade real DEX pools, watch it all on live charts.
   </Card>
 </CardGroup>
 

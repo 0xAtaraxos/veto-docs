@@ -1,0 +1,68 @@
+---
+title: "Direct Listing"
+description: "How a maki.finance launch works: one transaction creates the token, opens a live DEX pool, and locks the entire supply as liquidity forever."
+icon: "rocket"
+---
+
+There is no bonding curve on maki.finance, no graduation, and no migration. A launch **is** a listing: one transaction puts your token on a real DEX with locked liquidity, and it trades there from the block it was born in.
+
+## What one transaction does
+
+`createToken` performs all of this atomically, on the venue the creator picks ([SushiSwap or Uniswap v3](/protocol/venues)):
+
+1. **Deploys the ERC-20.** Exactly 1,000,000,000 tokens, 18 decimals, minted once. No owner, no mint function, no pause, no blacklist, no transfer fees.
+2. **Creates and initializes the WETH/token pool** at the global opening price, in the 1% fee tier.
+3. **Locks the entire 1B supply as liquidity.** The full supply is minted as one single-sided position and sent straight into the venue's immutable FeeLocker vault. It can never be withdrawn by anyone. Only the swap fees it earns can be collected.
+4. **Executes the optional dev buy**, before anyone else can reach the pool.
+
+By the time the transaction confirms, the token has a live pool, locked liquidity, and a price. There is no second phase and nothing left to trigger.
+
+## The launch geometry
+
+Every launch opens with identical numbers, on either venue:
+
+| Parameter | Value |
+| --- | --- |
+| Total supply | 1,000,000,000 (fixed forever) |
+| Supply in the locked position | 100% |
+| ETH the creator must provide as liquidity | 0 |
+| Opening price | ≈ 667.46M tokens per ETH |
+| Opening FDV | ≈ 1.4982 ETH |
+| Pool fee tier | 1% |
+| Creation fee | 0.001 ETH flat |
+
+The position is *single-sided*: it spans the price range from the opening tick downward-in-tokens, holding 100% tokens and zero ETH at launch. Buyers swap ETH into the position's range; the ETH they pay becomes the pool's real reserve.
+
+## The opening price is a permanent floor
+
+No liquidity was ever minted above the opening tick, so **a sell can never push the price above the launch price**. The price can only go above it while buys hold it there. If everyone who ever bought sold back, the price would return exactly to the opening price, never below the pool's solvency.
+
+This is the direct-listing equivalent of curve solvency: the pool always holds exactly the ETH that buyers put in, and rounding in v3 favors the pool.
+
+## The dev buy
+
+A creator can attach ETH to the launch transaction to make the very first buy:
+
+- It executes **at the public opening price**, inside the same transaction, before any other trade can land.
+- The creator receives **zero** free tokens. The dev buy is the only way for a creator to own their own launch.
+- It is visible on-chain forever, labeled as the dev buy. Check it before you ape.
+
+## What can never happen
+
+| Action | Possible? |
+| --- | --- |
+| Creator or team mints extra supply | ❌ No mint function exists |
+| Trading gets paused or wallets blacklisted | ❌ No pause or blacklist exists |
+| Liquidity gets pulled | ❌ The position sits in an ownerless vault with no withdrawal function |
+| Price gets dumped below the opening price by sells | ❌ No liquidity exists above the opening tick |
+| Launch parameters change per token | ❌ Fixed globally, snapshotted at launch |
+| Platform touches your funds | ❌ Fully non-custodial |
+
+<CardGroup cols={2}>
+  <Card title="The two venues" icon="arrows-split-up-and-left" href="/protocol/venues">
+    SushiSwap and Uniswap v3: identical geometry, one registry.
+  </Card>
+  <Card title="Fees" icon="coins" href="/protocol/fees">
+    Where the 1% pool fee goes, and what the launchpad charges (almost nothing).
+  </Card>
+</CardGroup>

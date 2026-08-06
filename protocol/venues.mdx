@@ -1,0 +1,44 @@
+---
+title: "Venues: SushiSwap & Uniswap"
+description: "Every maki.finance token lives in a real SushiSwap or Uniswap v3 pool from block one, visible to every major trading platform."
+icon: "arrows-split-up-and-left"
+---
+
+A maki.finance token doesn't trade on maki.finance. It trades on a real DEX, from its very first block. At launch the creator picks the venue, and the token lives there forever:
+
+- **SushiSwap** is the default and the venue we work closely with on Robinhood Chain. Most Maki launches open here.
+- **Uniswap v3** is available as an option at launch for creators who prefer it.
+
+Both are canonical v3 deployments sharing the same WETH and the same 1% fee tier, so a launch opens with *identical* geometry either way: same opening price, same locked position, same fee economics. One launchpad, one registry, one fee ledger. Only the pool's home differs.
+
+<Info>
+  The venue is **frozen into the token at creation**. A token lives on one DEX for its whole life; there is no migration and nothing to move.
+</Info>
+
+## Why this matters: your token is visible everywhere
+
+Because every token is an ordinary v3 pool on a major DEX, the entire trading ecosystem can see it without anyone lifting a finger:
+
+- **Charting and discovery platforms** (GeckoTerminal, DexScreener and friends) index the pool from its first swap.
+- **Aggregators and wallets** that integrate SushiSwap or Uniswap can route to it.
+- **Trading bots** interact with it like any other v3 pool, because it is one.
+
+There is no "on the launchpad" phase where only we can see your token. It is born public, on infrastructure every major platform already watches.
+
+## How trading works from second zero
+
+Freshly created pools have one practical problem: DEX routing APIs haven't indexed them yet, and on this chain Sushi's router depends on exactly such an API. So the Maki app trades through **MakiSwapRouter**, a minimal contract that swaps native ETH against the pool directly:
+
+- Works the instant the pool exists, identically on both venues.
+- Stateless, ownerless, immutable. It only ever swaps against a pool it re-derived from a known factory.
+- Native ETH in and out, with your slippage limit enforced on-chain.
+
+Once a token has broader liquidity, aggregators and DEX routers are a fine way to trade it too. MakiSwapRouter is simply the path that always works, from the first second.
+
+## One registry, two venues
+
+The launchpad keeps a single on-chain registry of every token: creator, venue, pool, position, and fee split. Indexers and integrators consume one `TokenCreated` stream regardless of venue. The [SDK](/developers/sdk) resolves each token's venue, pool, and fee locker automatically.
+
+<Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
+  Pick a venue, set the dev buy, one transaction. 0.001 ETH.
+</Card>

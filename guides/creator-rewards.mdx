@@ -1,10 +1,10 @@
 ---
 title: "Creator Rewards"
-description: "How creators earn on maki.finance: 0.3% of every curve trade and 30% of Uniswap fees after graduation, forever."
+description: "How creators earn on maki.finance: 30% of their token's pool swap fees, from the first trade, forever."
 icon: "gift"
 ---
 
-Launching a token on maki.finance gives you a permanent, on-chain fee stream. Not an airdrop, not an allocation you have to dump: a revenue share that pays as long as your coin trades. There are two phases.
+Launching a token on maki.finance gives you a permanent, on-chain fee stream. Not an airdrop, not an allocation you have to dump: a revenue share that pays as long as your coin trades. And because your token trades in a real DEX pool from block one, the stream starts with its very first swap.
 
 {/* Re-record the claim flow in the Maki UI, drop at /videos/claim.mp4 and uncomment:
 
@@ -12,26 +12,18 @@ Launching a token on maki.finance gives you a permanent, on-chain fee stream. No
   <video autoPlay muted loop playsInline src="/videos/claim.mp4" />
 </Frame> */}
 
-## Stream 1: While on the bonding curve
+## The stream
 
-Every buy and sell on your token's curve pays a **1% fee in ETH**. Your share is **0.3%** of the trade (the protocol takes 0.7%).
-
-- Fees accrue to your token's on-chain balance automatically, nothing to configure.
-- Claim any time from your creator dashboard; claims never expire.
-- Payouts are in ETH, straight to your fee-recipient address.
-
-## Stream 2: After graduation, forever
-
-When your token graduates, its Uniswap v3 liquidity is locked in the FeeLocker vault. The vault can't withdraw the liquidity, but it collects the pool's **1% swap fees** and splits them:
+Your token's entire supply sits as locked liquidity in its [SushiSwap or Uniswap pool](/protocol/venues). Every swap pays the pool's **1% fee**, that fee accrues to the locked position, and each harvest is split:
 
 | Recipient | Share |
 | --- | --- |
 | Creator (you) | 30% |
 | Protocol treasury | 70% |
 
-The 30% mirrors your share of curve fees (0.3% of the 1% trade fee). Your token's fee terms are **snapshotted on-chain the moment you launch** and can never change afterwards. Not by you, not by the platform. (The platform can tune the rates offered to *future* launches, within hard caps.)
+Your token's fee terms are **snapshotted on-chain the moment you launch** and can never change afterwards. Not by you, not by the platform. (The platform can tune the rates offered to *future* launches.)
 
-Every Uniswap swap of your token, from any interface, aggregator, or bot on Robinhood Chain, earns you fees. This stream has no expiry.
+Every swap of your token, from any interface, aggregator, or bot on Robinhood Chain, earns you fees. This stream has no expiry, and payouts arrive in ETH and, when the position has collected token-side fees, in your token as well.
 
 ## Claiming
 
@@ -40,7 +32,7 @@ Every Uniswap swap of your token, from any interface, aggregator, or bot on Robi
     Go to your profile on [maki.finance](https://maki.finance). Wallets that have launched at least one token see a creator dashboard with claimable and lifetime earnings per token.
   </Step>
   <Step title="Claim">
-    Hit claim on a token (or claim across your portfolio). Curve fees and graduated LP fees are separate claims, both in ETH (LP fee claims may also include the paired token side).
+    Hit claim on a token (or claim across your portfolio). One signature; the FeeLocker harvests the pool fees and pays your share out directly.
   </Step>
 </Steps>
 
@@ -50,7 +42,7 @@ Every Uniswap swap of your token, from any interface, aggregator, or bot on Robi
 
 ## Redirecting your fee stream
 
-The current fee recipient of a token can reassign the stream to a different address. This is useful for routing earnings to a multisig, a splitter contract, or a new wallet, and it applies to both curve fees and the creator share of post-graduation LP fees.
+The current fee recipient of a token can reassign the stream to a different address. This is useful for routing earnings to a multisig, a splitter contract, or a new wallet.
 
 <Warning>
   Redirecting the fee stream is irreversible unless the *new* recipient redirects it back. Double-check the address.
@@ -58,4 +50,4 @@ The current fee recipient of a token can reassign the stream to a different addr
 
 ## What creators can't do
 
-For traders' protection, creators have **no special powers** over their token: no free supply, no minting, no pausing, no fee changes, no liquidity withdrawal. Your only privileges are the fee stream and the optional first buy at the public price.
+For traders' protection, creators have **no special powers** over their token: no free supply, no minting, no pausing, no fee changes, no liquidity withdrawal. Your only privileges are the fee stream and the optional [dev buy](/protocol/direct-listing#the-dev-buy) at the public opening price.

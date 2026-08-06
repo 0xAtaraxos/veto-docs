@@ -1,27 +1,33 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on maki.finance with @vetostudio/veto-sdk: typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on maki.finance with @maki-studio/sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@vetostudio/veto-sdk` is the official TypeScript SDK for the maki.finance protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading the curve, quoting, migration, fee claims, and event streaming.
+`@maki-studio/sdk` is the official TypeScript SDK for the maki.finance protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading against the launch pool, quoting, fee claims, and event streaming.
 
 ```bash
-npm install @vetostudio/veto-sdk viem
+npm install @maki-studio/sdk viem
 ```
 
 <Info>
   The package ships both ESM and CommonJS builds (`import` and `require` both work). All amounts are `bigint` wei values. Use viem's `parseEther` / `formatEther` helpers.
 </Info>
 
+Three protocol facts shape the API:
+
+- **Two venues, one registry.** `Venue.SUSHI` (1) and `Venue.UNISWAP` (0) are canonical v3 forks sharing one WETH, both on the 1% tier, so a launch opens on identical geometry either way and the same quote math serves both. The venue is frozen into the token at creation; there is a single launchpad, a single `TokenCreated` stream, and a single fee ledger.
+- **The launchpad does not intermediate trades.** After launch, trading is an ordinary v3 swap. `write.buy` / `write.sell` go through MakiSwapRouter straight against the pool, with native ETH in and out.
+- **The opening price is a permanent floor.** No liquidity was ever minted above `startTick`, so a sell can never push the price above the launch price. `quoteSell` reports this as `cappedAtOpeningPrice` rather than pretending the fill exists.
+
 ## Setup
 
-Create a viem client pair and pass it to `createVeto`. The SDK exports ready-made chain definitions for Robinhood Chain mainnet and testnet.
+Create a viem client pair and pass it to `createMaki`. The SDK exports ready-made chain definitions for Robinhood Chain mainnet and testnet.
 
 ```ts
 import { createPublicClient, createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { createVeto, robinhoodMainnet } from "@vetostudio/veto-sdk";
+import { createMaki, robinhoodMainnet } from "@maki-studio/sdk";
 
 const publicClient = createPublicClient({
   chain: robinhoodMainnet,
@@ -34,7 +40,7 @@ const walletClient = createWalletClient({
   account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`),
 });
 
-const veto = createVeto({
+const maki = createMaki({
   publicClient,
   walletClient, // optional; omit for read-only usage
   network: "mainnet",
@@ -42,188 +48,151 @@ const veto = createVeto({
 ```
 
 <Warning>
-  Only `"mainnet"` is deployed. The `"testnet"` entry is a guarded placeholder (Uniswap v3 doesn't exist on Robinhood Chain testnet); the SDK throws a descriptive error if you select it. For development, fork mainnet with Anvil and pass a custom deployment object (below).
+  Only `"mainnet"` is deployed. The `"testnet"` entry is a guarded placeholder (neither DEX exists on Robinhood Chain testnet); the SDK throws a descriptive error if you select it. For development, fork mainnet with Anvil and pass a custom deployment object (below).
 </Warning>
 
 Three namespaces do all the work:
 
-- `veto.read`: typed views over the launchpad (curve state, quotes, fees, registry, pool info)
-- `veto.write`: transactions (throws if you didn't pass a `walletClient`)
-- `veto.watch` / `veto.backfill`: event streaming and historical indexing
+- `maki.read`: typed views over the launchpad (registry, launch records, fee config, launch geometry, venue discovery, pool state)
+- `maki.write`: transactions (throws if you didn't pass a `walletClient`)
+- `maki.watch` / `maki.backfill`: event streaming and historical indexing
 
 <Note>
   **Local development:** you can point the SDK at any deployment (e.g. an Anvil fork) by passing a deployment object instead of a network name:
   ```ts
-  const veto = createVeto({
+  const maki = createMaki({
     publicClient,
     walletClient,
-    network: { chain, launchpad: "0x…", deployBlock: 0n },
+    network: { chain, launchpad: "0x…", swapRouter: "0x…", deployBlock: 0n },
   });
   ```
+</Note>
+
+## Launching a token
+
+One transaction deploys the ERC-20, opens the WETH/token 1% pool on the chosen venue at the global opening price, locks the entire 1B supply as a single-sided position in that venue's fee locker, and optionally executes the creator's dev buy before anyone else can reach the pool. The flat creation fee (0.001 ETH under the current config) is read live and added to the transaction value automatically, so `devBuyEth` is exactly the dev buy.
+
+The token address is not knowable in advance (the CREATE2 salt is mined on-chain so the token sorts above WETH), so `launch` waits for the receipt and decodes it for you:
+
+```ts
+import { Venue } from "@maki-studio/sdk";
+
+const { token, pool, venue, positionId, devBuyTokensOut } = await maki.write.launch({
+  name: "Maki Star",
+  symbol: "MAKI",
+  metadataURI: "ipfs://Qm…",       // image + description, pinned to IPFS
+  venue: Venue.SUSHI,              // or Venue.UNISWAP
+  devBuyEth: parseEther("0.5"),    // optional first buy, before the public
+});
+```
+
+`maki.write.createToken(params)` is the lower-level variant: same parameters, returns just the transaction hash.
+
+<Note>
+  Every `maki.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash` (`launch` is the one exception; it awaits the receipt for you). Await confirmation with `publicClient.waitForTransactionReceipt`.
 </Note>
 
 ## Reading the protocol
 
 ```ts
-// Enumerate tokens (newest last), then batch-fetch curve state in one RPC call
-const tokens = await veto.read.getTokens(0n, 50n);
-const states = await veto.read.getCurveStates(tokens);
+// Enumerate launches (newest last; both venues in one list, in launch order),
+// then batch-fetch launch records in one RPC call
+const tokens = await maki.read.getTokens(0n, 50n);
+const records = await maki.read.getTokenRecords(tokens);
+// each → { creator, creatorLpShareBps, venue, pool, positionId }
 
 // Per-token views
-const info = await veto.read.getTokenInfo(tokens[0]);
+const record = await maki.read.getTokenRecord(token);
+const meta = await maki.read.getTokenMetadata(token);
 // → { address, name, symbol, metadataURI }
-const state = await veto.read.getCurveState(tokens[0]);
-// → { virtualEth, virtualToken, realTokensLeft, realEth, creator, graduated, migrated,
-//     protocolFeeBps, creatorFeeBps, creatorLpShareBps }  ← the token's frozen fee snapshot
+
+// Live pool state, feed straight into the quote math
+const state = await maki.read.getPoolState(record.pool);
+// → { sqrtPriceX96, tick, liquidity }
 
 // The GLOBAL fee config (owner-tunable; what FUTURE launches will snapshot).
-// For a specific token's fees, use its CurveState snapshot; those never change.
-const { protocolFeeBps, creatorFeeBps, totalFeeBps, creatorLpShareBps, creationFee } =
-  await veto.read.getFees();
+// For a specific token's split, use its record; that never changes.
+const { creatorLpShareBps, creationFee } = await maki.read.getFees();
 
-// A token's snapshotted LP fee share (fixed at its creation)
-const share = await veto.read.creatorLpShareBpsOf(token);
+// The immutable opening geometry, identical on both venues
+const geometry = await maki.read.launchGeometry();
+// → { startTick, startSqrtPriceX96, tickLower, tickSpacing, poolFee }
 
-// Backend wallet allowed to trigger fee payouts (zero address = disabled)
-const authority = await veto.read.claimAuthority();
+// Per-venue infrastructure, all discovered from the launchpad
+const venues = await maki.read.venues();
+// → [{ venue, positionManager, factory, locker }, …]
+const locker = await maki.read.lockerFor(token); // the locker holding this token's position
 ```
 
 ## Quoting
 
-You can quote **on-chain** (source of truth) or **client-side**. The SDK's `math` module is a bit-exact mirror of the contract's rounding, so quotes match to the wei with zero RPC round-trips:
+Quotes are computed **client-side, with zero RPC round-trips**. The `math` module is an exact port of Uniswap's `TickMath` plus single-range v3 swap math with the pool's own rounding, and it's venue-independent: both DEXes are canonical forks on identical launch geometry. A fork test in the contracts repo pins parity, asserting a live 1 ETH buy fills for exactly the wei amount `quoteBuy` returns, on both venues.
 
 ```ts
-import { quoteBuy, quoteSell, currentPrice, curveProgressBps, ethToGraduate, totalFeeBpsOf } from "@vetostudio/veto-sdk";
+import { quoteBuy, quoteSell, priceInWei, fdvWei, soldProgressBps } from "@maki-studio/sdk";
 
-const state = await veto.read.getCurveState(token);
-const totalFeeBps = totalFeeBpsOf(state); // from the token's own snapshot; no extra RPC call
+const state = await maki.read.getPoolState(pool);
 
-// Instant, local, exact
-const q = quoteBuy(state, totalFeeBps, parseEther("1"));
-// → { tokensOut, fee, ethUsed, graduates }   graduates=true → this buy finishes the curve
+const q = quoteBuy(state, parseEther("1"));
+// → { tokensOut, fee, ethUsed, sqrtPriceX96After }
 
-const price = currentPrice(state);            // wei per whole token
-const progress = curveProgressBps(state);     // 0–10000 (10000 = graduated)
-const remaining = ethToGraduate(state, totalFeeBps); // gross ETH to buy out the curve
+const sq = quoteSell(state, tokensIn);
+// → { ethOut, fee, tokensUsed, sqrtPriceX96After, cappedAtOpeningPrice }
 
-// Or ask the contract directly, identical results
-const onchain = await veto.read.quoteBuy(token, parseEther("1"));
+const price = priceInWei(state.sqrtPriceX96);  // wei per whole token
+const fdv = fdvWei(state.sqrtPriceX96);        // wei, over the fixed 1B supply
+const sold = soldProgressBps(state);           // 0–10000: how much of the position buyers hold
 ```
 
-## Launching a token
-
-`createToken` deploys the ERC-20 and opens its curve. The flat creation fee (0.001 ETH under the current config) is read live and added to the transaction value automatically, so `devBuyEth` is exactly the dev buy. Recover the token address from the `TokenCreated` event in the receipt; the event also carries the token's frozen fee snapshot:
-
-```ts
-import { parseEventLogs } from "viem";
-import { vetoDotFunAbi } from "@vetostudio/veto-sdk";
-
-const hash = await veto.write.createToken({
-  name: "My Star",
-  symbol: "MSTAR",
-  metadataURI: "ipfs://Qm…",          // image + description, pinned to IPFS
-  devBuyEth: parseEther("0.5"),       // optional first buy at the public price
-});
-
-const receipt = await publicClient.waitForTransactionReceipt({ hash });
-const [created] = parseEventLogs({
-  abi: vetoDotFunAbi,
-  logs: receipt.logs,
-  eventName: "TokenCreated",
-});
-const token = created.args.token; // args also include protocolFeeBps / creatorFeeBps / creatorLpShareBps
-```
-
-<Note>
-  Every `veto.write.*` method **simulates first** (so reverts are decoded before you spend gas) and returns the transaction `Hash`. Await the receipt yourself with `publicClient.waitForTransactionReceipt`.
-</Note>
+<Info>
+  `cappedAtOpeningPrice: true` means the sell would push the price up to the launch price, where liquidity ends. `tokensUsed` is then less than the input: the rest has nowhere to trade. Surface this in your UI instead of quoting a fill that can't happen.
+</Info>
 
 ## Trading
 
-### Buying
+Trades go through MakiSwapRouter straight against the token's own pool: native ETH in and out, identical on both venues, live from the block the token launched in. Pass the pool address (from the token's record or `TokenCreated.pool`) plus your quote; slippage (default 1%) and deadline (default 5 min) are built in.
 
 ```ts
-const ethIn = parseEther("1");
-const q = quoteBuy(await veto.read.getCurveState(token), totalFeeBps, ethIn);
-
-// Exact ETH in; slippage (default 1%) and deadline (default 5 min) built in
-const hash = await veto.write.buy(token, ethIn, q.tokensOut, { slippageBps: 100 });
+// Buy: exact ETH in
+const q = quoteBuy(await maki.read.getPoolState(pool), parseEther("1"));
+const hash = await maki.write.buy(pool, parseEther("1"), q.tokensOut, { slippageBps: 100 });
 await publicClient.waitForTransactionReceipt({ hash });
 
-// Or exact tokens out, refunding any excess ETH
-await veto.write.buyExactTokens(token, tokensWanted, maxEthIn);
+// Sell: approve the router once, then swap
+await maki.write.approveRouter(token, amount);
+const sq = quoteSell(await maki.read.getPoolState(pool), amount);
+await maki.write.sell(pool, amount, sq.ethOut, { slippageBps: 50 });
 ```
 
-### Selling
-
-Tokens support EIP-2612, so the one-transaction permit path is the default choice:
-
-```ts
-const balance = await veto.read.balanceOf(token, account.address);
-const sq = quoteSell(await veto.read.getCurveState(token), totalFeeBps, balance / 2n);
-
-// One transaction: signs a permit, no separate approve needed
-await veto.write.sellWithPermit(token, balance / 2n, sq.ethOut);
-
-// Classic two-step path also available:
-await veto.write.approve(token, amount);
-await veto.write.sell(token, amount, sq.ethOut, { slippageBps: 50 });
-```
-
-## Graduation & migration
-
-```ts
-const q = quoteBuy(state, totalFeeBps, parseEther("8"));
-if (q.graduates) {
-  // This buy will finish the curve; ethUsed < input and the remainder is refunded on-chain
-}
-
-// After graduation, anyone can migrate. It's permissionless and free.
-await publicClient.waitForTransactionReceipt({ hash: await veto.write.migrate(token) });
-
-// Inspect the resulting Uniswap v3 pool
-const pool = await veto.read.getPool(token);              // zero address until pool exists
-const { sqrtPriceX96, liquidity } = await veto.read.getPoolState(pool);
-const positionId = await veto.read.positionOf(token);     // locked LP NFT id (0 = not migrated)
-```
+Check an existing allowance with `maki.read.swapAllowance(token, owner)` to skip the approve when it's already in place.
 
 ## Claiming fees
 
-Claims are gated but never redirectable: funds always go to the registered recipient, and only the recipient itself (or the platform's claim-authority backend) can trigger the payout.
+There is no per-trade launchpad fee. Creator and protocol revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the venue's FeeLocker and split creator/treasury at the token's snapshotted `creatorLpShareBps` (30% to the creator under the current config). Claims are gated but never redirect funds: one call always pays both parties.
 
 ```ts
-// Accrued but unclaimed creator fees for a token (in wei)
-const owed = await veto.read.creatorFeesOwed(token);
+// Harvest a token's locked-LP swap fees. Resolves the right venue's locker itself.
+// Callable by the token's fee recipient, the treasury, or the claim authority.
+await maki.write.collectFees(token);
 
-// Fee recipient or claim authority only; pays the recipient
-await veto.write.claimCreatorFees(token);
+// Redirect your fee stream (only the current recipient can call this)
+await maki.write.setFeeRecipient(token, "0xNewRecipient…");
 
-// Airdrop mode (claim authority): pay many tokens' recipients in one tx
-await veto.write.claimCreatorFeesBatch([tokenA, tokenB, tokenC]);
-
-// Treasury only
-await veto.write.claimProtocolFees();
-
-// Harvest locked-LP swap fees for a graduated token; recipient, treasury,
-// or claim authority; split at the token's snapshotted ratio
-const locker = await veto.read.locker();
-await veto.write.collectFees(locker, token);
-
-// Redirect your creator fee stream (only the current recipient can call this)
-await veto.write.setFeeRecipient(token, "0xNewRecipient…");
+// Accrued creation fees; treasury only
+await maki.write.claimProtocolFees();
 ```
+
+Every launched token is an `ERC20Permit`, and `maki.write.signPermit({ token, spender, value })` produces the `{ v, r, s, deadline }` tuple for approve-free integrations.
 
 ## Streaming events
 
 The watch layer polls `eth_getLogs` over HTTP (Robinhood Chain's public RPC has no websocket), delivers events **at least once** in `(blockNumber, logIndex)` order, and gives you a cursor for crash-safe resumption:
 
 ```ts
-const stop = veto.watch(
+const stop = maki.watch(
   {
-    onTokenCreated: (e) => console.log("new token", e.token, e.symbol, "by", e.creator),
-    onTrade: (e) => console.log(e.token, e.isBuy ? "buy" : "sell", e.ethGross),
-    onGraduated: (e) => console.log("graduated", e.token, "raised", e.ethRaised),
-    onMigrated: (e) => console.log("pool live", e.pool, "position", e.tokenId),
+    onTokenCreated: (e) => index(e.token, e.pool, e.venue),
+    onDevBuy: (e) => console.log("dev bought", e.tokensOut),
     onBlockProcessed: (n) => saveCursor(n), // persist this; it's your resume point after restarts
     onError: (err) => console.error(err),
   },
@@ -236,15 +205,28 @@ const stop = veto.watch(
 For historical indexing, `backfill` replays the full event history in chunked `eth_getLogs` calls and resolves with the last processed block:
 
 ```ts
-const lastBlock = await veto.backfill({
-  onTokenCreated: indexToken,
-  onTrade: indexTrade,
+const lastBlock = await maki.backfill({ onTokenCreated: indexToken });
+```
+
+Handlers exist for every launchpad event: `onTokenCreated`, `onDevBuy`, `onFeeRecipientSet`, `onFeeConfigSet`, `onProtocolFeesClaimed`, `onLockerSet`.
+
+<Info>
+  The launchpad only emits **launch-time** events. Once a token is created, all trading happens on its v3 pool, which the launchpad never sees. For a live trade feed, subscribe to `Swap` on each token's own pool (`TokenCreated.pool` is the address). MakiSwapRouter emits its own trader-indexed `Swap` too, but only for trades routed through it; the pool's event is the complete picture.
+</Info>
+
+```ts
+import { parseAbiItem } from "viem";
+
+const unwatch = publicClient.watchEvent({
+  address: pool, // from TokenCreated.pool
+  event: parseAbiItem(
+    "event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)",
+  ),
+  onLogs: handleTrades,
 });
 ```
 
-<Info>
-  Make handlers **idempotent** (delivery is at-least-once), and key trades on `transactionHash + logIndex` in your database.
-</Info>
+Make handlers **idempotent** (delivery is at-least-once), and key trades on `transactionHash + logIndex` in your database.
 
 ## Error handling
 
@@ -252,29 +234,33 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 
 | Error | Meaning |
 | --- | --- |
-| `SlippageExceeded` | Curve moved past your `slippageBps`; re-quote and retry |
+| `SlippageExceeded` | Price moved past your `slippageBps`; re-quote and retry |
 | `Expired` | The `deadline` passed before inclusion |
-| `CurveClosed` | Token already graduated; trade it on Uniswap instead |
-| `CurveStillOpen` | `migrate` called before graduation |
-| `AlreadyMigrated` | `migrate` called twice |
+| `UnknownPool` | The pool is not a launch pool derivable from a known factory |
 | `UnknownToken` | Address is not a maki.finance launch |
-| `ZeroAmount` | Trade amount was zero |
+| `InsufficientCreationFee` | `createToken` value didn't cover the flat fee (the SDK adds it for you) |
+| `UnknownVenue` | Venue id is neither 0 (Uniswap) nor 1 (Sushi) |
 | `NotFeeRecipient` | `setFeeRecipient` from a non-recipient address |
+| `NotAuthorized` | `collectFees` from an address that is not the recipient, treasury, or claim authority |
+| `ZeroAmount` | Trade amount was zero |
 
 ## Full API surface
 
 <AccordionGroup>
-  <Accordion title="veto.read: all methods">
-    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens()`, `getCurveState(token)`, `getCurveStates(tokens[])`, `getFees()`, `claimAuthority()`, `creatorLpShareBpsOf(token)`, `quoteBuy(token, ethIn)`, `quoteBuyExact(token, tokensOut)`, `quoteSell(token, amount)`, `creatorFeesOwed(token)`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `getTokenInfo(token)`, `balanceOf(token, account)`, `getPool(token)`, `positionOf(token)`, `getPoolState(pool)`, `locker()`, `treasury()`, `weth()`, `positionManager()`
+  <Accordion title="maki.read: all methods">
+    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens(pageSize?)`, `getTokenRecord(token)`, `getTokenRecords(tokens[])`, `venueOf(token)`, `getFees()`, `launchGeometry()`, `claimAuthority()`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `creatorLpShareBpsOf(token)`, `lockerOf(venue)`, `lockerFor(token)`, `positionManagerOf(venue)`, `factoryOf(venue)`, `venueInfo(venue)`, `venues()`, `treasury()`, `owner()`, `weth()`, `getTokenMetadata(token)`, `balanceOf(token, account)`, `swapAllowance(token, owner)`, `getPool(token, venue?)`, `getPoolState(pool)`, `positionOf(token)`
   </Accordion>
-  <Accordion title="veto.write: all methods">
-    `createToken({ name, symbol, metadataURI, devBuyEth?, minTokensOut? })`, `buy(token, ethIn, quotedTokensOut, opts?)`, `buyExactTokens(token, tokensOut, maxEthIn, opts?)`, `sell(token, amount, quotedEthOut, opts?)`, `sellWithPermit(token, amount, quotedEthOut, opts?)`, `approve(token, amount)`, `migrate(token)`, `claimCreatorFees(token)`, `claimCreatorFeesBatch(tokens[])`, `claimProtocolFees()`, `setFeeRecipient(token, newRecipient)`, `collectFees(locker, token)`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
+  <Accordion title="maki.write: all methods">
+    `launch({ name, symbol, metadataURI, venue, devBuyEth?, minTokensOut? })`, `createToken(sameParams)`, `buy(pool, ethIn, quotedTokensOut, opts?)`, `sell(pool, tokenAmount, quotedEthOut, opts?)`, `approveRouter(token, amount)`, `approve(token, spender, amount)`, `collectFees(token)`, `setFeeRecipient(token, newRecipient)`, `claimProtocolFees()`, `signPermit({ token, spender, value, deadline? })`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
-    `quoteBuy(state, totalFeeBps, grossIn)`, `quoteBuyExact(state, totalFeeBps, tokensOut)`, `quoteSell(state, totalFeeBps, amount)`, `totalFeeBpsOf(state)`, `currentPrice(state)`, `curveProgressBps(state)`, `ethToGraduate(state, totalFeeBps)`, `minAfterSlippage(quoted, slippageBps)`. Plus constants `TOTAL_SUPPLY`, `SALE_SUPPLY`, `POOL_SUPPLY`, `VIRTUAL_TOKEN_0`
+    `quoteBuy(state, ethIn, fee?)`, `quoteBuyExact(state, tokensOut, fee?)`, `quoteSell(state, tokensIn, fee?, startSqrtPriceX96?)`, `tokensPerEth(sqrtPriceX96)`, `priceInWei(sqrtPriceX96)`, `fdvWei(sqrtPriceX96)`, `tokensRemaining(state)`, `soldProgressBps(state, startSqrtPriceX96?)`, `minAfterSlippage(quoted, slippageBps)`, `getSqrtRatioAtTick(tick)`. Plus constants `TOTAL_SUPPLY`, `POOL_FEE`, `TICK_SPACING`, `TICK_LOWER`, `START_TICK`, `START_SQRT_PRICE_X96`, `SQRT_PRICE_LOWER_X96`, `MIN_TICK`, `MAX_TICK`, `BPS`
+  </Accordion>
+  <Accordion title="Chains and venues">
+    `Venue` (`UNISWAP` = 0, `SUSHI` = 1), `VENUE_NAMES`, `isVenue(value)`, `robinhoodMainnet`, `robinhoodTestnet`, `deployments`, `assertDeployed(deployment)`, types `MakiDeployment`, `NetworkName`
   </Accordion>
   <Accordion title="ABIs">
-    `vetoDotFunAbi`, `vetoTokenAbi`, `feeLockerAbi`, exported for direct viem/wagmi use and event parsing.
+    `makiDotFunAbi`, `makiTokenAbi`, `feeLockerAbi`, `makiSwapRouterAbi`, `uniswapPoolAbi`, `uniswapFactoryAbi`, `positionManagerAbi`, exported for direct viem/wagmi use and event parsing.
   </Accordion>
 </AccordionGroup>
 

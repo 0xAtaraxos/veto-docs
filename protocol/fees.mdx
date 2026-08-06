@@ -1,61 +1,38 @@
 ---
 title: "Fees"
-description: "Every fee on maki.finance, exactly: 0.001 ETH launches, 1% curve trades, and post-graduation Uniswap fee splits."
+description: "What maki.finance charges: a flat 0.001 ETH to launch, no launchpad fee on trades, and the pool's own 1% swap fee split between creator and protocol."
 icon: "coins"
 ---
 
-The whole fee schedule fits in one table. Everything below is enforced on-chain, not by policy.
+The fee model is short enough to fit in three sentences. Launching costs a flat **0.001 ETH**. The launchpad takes **no fee on trades**. The only trading cost is the pool's own **1% v3 swap fee**, which accrues to the permanently locked liquidity position and is split between the token's creator and the protocol.
 
-## Summary
+## Launching
 
-| Action | Fee |
+| Item | Cost |
 | --- | --- |
-| Launch a token | **0.001 ETH** flat, plus gas |
-| Buy or sell on the bonding curve | **1%** of the ETH amount |
-| Graduation / migration | **Free** (permissionless, gas only) |
-| Trade on Uniswap after graduation | **1%** pool fee tier (standard Uniswap mechanics) |
-| Claim creator or protocol fees | **Free** (gas only) |
+| Creation fee | 0.001 ETH, flat |
+| Liquidity you must provide | 0 ETH (the locked supply is the liquidity) |
+| Network gas | typically a fraction of a cent on Robinhood Chain |
 
-## Bonding-curve trade fee: 1%
+The optional dev buy is not a fee: it's a normal first purchase at the public opening price, and the 1% pool fee applies to it like any other swap.
 
-Taken in ETH on every buy and sell, and split:
+## Trading
 
-<CardGroup cols={2}>
-  <Card title="Protocol · 0.7%" icon="building-columns">
-    Accrues to the protocol treasury. Funds platform development and operations.
-  </Card>
-  <Card title="Creator · 0.3%" icon="user-star">
-    Accrues to the token creator's claimable balance. See [Creator Rewards](/guides/creator-rewards).
-  </Card>
-</CardGroup>
+Every swap in the pool pays the standard v3 **1% fee tier**, on SushiSwap and Uniswap alike. That fee doesn't go to a market maker or to us off the top: it accrues to the pool's liquidity position, and the entire position belongs to the locked vault.
 
-Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Creator fees can be claimed by the fee recipient themselves or triggered by the platform's claimer service (which pays out to recipients in batches; the money always goes to the recipient, never to whoever triggers the claim). Protocol fees can only be claimed by the treasury.
+There are no deposit, withdrawal, account, or subscription fees of any kind, and no extra fee added by the Maki app or MakiSwapRouter.
 
-<Info>
-  **A token's fee rates are frozen the moment it launches.** The platform maintains a global fee configuration (currently 0.7% + 0.3% = 1%), and each new token takes a permanent snapshot of it at creation. No one, not even the protocol owner, can change the fees of a token that already exists. The global configuration can be tuned for *future* launches, within hard caps baked into the contract: at most 5% total trade fee and at most 0.1 ETH creation fee.
-</Info>
+## Where the 1% goes
 
-## After graduation: Uniswap v3 pool fees
-
-Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity, which is the position locked in the FeeLocker vault. The token's fee recipient, the treasury, or the platform's claimer service can trigger a fee collection, which splits the harvest:
+The locked position's accumulated fees can be collected at any time (by the token's fee recipient, the treasury, or the platform's claimer service). Each harvest is split at the ratio snapshotted into the token at launch:
 
 | Recipient | Share |
 | --- | --- |
 | Token creator | 30% |
 | Protocol treasury | 70% |
 
-Like the trade fee, this split is snapshotted into the token at launch and can never change for that token afterwards: every migrated pool keeps paying out at the terms that were advertised on its launch day.
+The split is immutable per token: whatever terms a token launched with, its pool pays out at those terms forever. This is the protocol's entire revenue model. If tokens don't trade, nobody earns.
 
-## Gas
-
-Every transaction pays Robinhood Chain gas in ETH. As an Arbitrum Orbit L2, gas costs are typically a tiny fraction of a cent to a few cents. There are **no** deposit, withdrawal, account, or subscription fees of any kind.
-
-## Example: a 1 ETH buy
-
-```text
-You send:            1.000 ETH
-Fee (1%):            0.010 ETH   → 0.007 protocol · 0.003 creator
-Goes into the curve: 0.990 ETH   → priced by x·y=k, tokens to your wallet
-```
-
-The trading widget always shows the fee and your exact minimum receive amount before you sign.
+<Card title="Creator rewards" icon="hand-holding-dollar" href="/guides/creator-rewards">
+  How creators claim their 30% of pool fees, in ETH and tokens, any time.
+</Card>

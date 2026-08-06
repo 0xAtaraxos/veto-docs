@@ -1,10 +1,10 @@
 ---
 title: "Launch a Token"
-description: "Create your own meme coin on maki.finance in one transaction, for a flat 0.001 ETH."
+description: "Create your own meme coin on maki.finance in one transaction, for a flat 0.001 ETH, straight into a live SushiSwap or Uniswap pool."
 icon: "rocket"
 ---
 
-One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. That's the whole process. No forms, no approval queue, no gatekeeping.
+One transaction, a flat 0.001 ETH plus gas, and your token is live in a real DEX pool with its liquidity locked forever. That's the whole process. No forms, no approval queue, no gatekeeping, and no second phase later.
 
 {/* Re-record the create flow in the Maki UI, drop at /videos/create.mp4 and uncomment:
 
@@ -30,14 +30,17 @@ One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. 
   <Step title="Fill in the basics">
     Enter the name and ticker, upload your logo, and add a description and socials. Your media and metadata are pinned to IPFS, and the resulting metadata URI is stored immutably on the token contract.
   </Step>
+  <Step title="Pick your venue">
+    Choose where your token's pool lives: **SushiSwap** (the default; it's the venue we work closely with on this chain) or **Uniswap v3** if you prefer it. Both open at the identical price with identical economics; the choice is permanent.
+  </Step>
   <Step title="Optional: dev buy">
-    Attach ETH to make the very first buy on your own curve. This executes at the **same public starting price** anyone else would get; you receive no free or discounted tokens. A visible dev buy signals commitment, but a large one followed by a dump will be visible on-chain too.
+    Attach ETH to make the very first buy in your own pool, inside the launch transaction, before anyone else can trade. It executes at the **same public opening price** anyone else would get; you receive no free or discounted tokens. A visible dev buy signals commitment, but a large one followed by a dump will be visible on-chain too.
   </Step>
   <Step title="Review and launch">
-    Check everything carefully, because token details are **immutable after launch**. Confirm the transaction. Your token deploys, its bonding curve opens, and it's instantly live and tradable on the site.
+    Check everything carefully, because token details are **immutable after launch**. Confirm the transaction. Your token deploys, its pool opens at the fixed launch price, the entire supply locks as liquidity, and it's live and tradable everywhere at once.
   </Step>
   <Step title="Share it">
-    Every token gets its own page with a live chart, trades, and comments. Share the link and start building your community.
+    Every token gets its own page with a live chart, trades, and comments. And because the pool is on a major DEX, charting sites and aggregators pick it up on their own. Share the link and start building your community.
   </Step>
 </Steps>
 
@@ -47,17 +50,18 @@ One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. 
 | --- | --- |
 | Token standard | ERC-20 with EIP-2612 permit (gasless approvals) |
 | Total supply | 1,000,000,000, minted once, fixed forever |
-| Sold on the bonding curve | 793,100,000 (79.31%) |
-| Reserved for Uniswap liquidity | 206,900,000 (20.69%) |
+| Liquidity | The entire supply, locked forever as a single position |
+| Venue | SushiSwap or Uniswap v3, your choice, frozen at launch |
+| Opening FDV | ≈ 1.4982 ETH (same for every launch) |
 | Creation fee | 0.001 ETH flat, plus gas |
 | Creator allocation | 0 tokens |
 | Admin functions on the token | None. No owner, mint, pause, or blacklist |
 
 ## Immutable vs. yours to earn
 
-Once launched, **nothing about the token can be changed**, not by you and not by the platform: supply, name, ticker, metadata URI, curve parameters, and fee rates are all fixed.
+Once launched, **nothing about the token can be changed**, not by you and not by the platform: supply, name, ticker, metadata URI, venue, and fee terms are all fixed.
 
-What you get as the creator is a **fee stream**: 0.3% of every curve trade, and 30% of Uniswap swap fees after graduation, claimable anytime. See [Creator Rewards](/guides/creator-rewards).
+What you get as the creator is a **fee stream**: 30% of your pool's 1% swap fees, from the first trade, claimable anytime. See [Creator Rewards](/guides/creator-rewards).
 
 <Note>
   You can redirect where your creator fees are paid (for example, to a multisig) at any time, but only the current fee recipient can do that.
