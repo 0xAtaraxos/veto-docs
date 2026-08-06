@@ -17,18 +17,9 @@
     "default": "dark"
   },
   "background": {
-    "decoration": "grid",
     "color": {
       "light": "#FBF7EE",
       "dark": "#131118"
-    }
-  },
-  "fonts": {
-    "heading": {
-      "family": "Pixelify Sans"
-    },
-    "body": {
-      "family": "Inter"
     }
   },
   "navbar": {
