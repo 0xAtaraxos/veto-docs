@@ -13,6 +13,10 @@
     "dark": "/logo/maki-mark.png"
   },
   "favicon": "/favicon.png",
+  "banner": {
+    "content": "Launch coins paired to any RWA and earn staking rewards.",
+    "dismissible": true
+  },
   "appearance": {
     "default": "dark"
   },
