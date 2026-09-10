@@ -1,10 +1,10 @@
 ---
 title: "TypeScript SDK"
-description: "Build bots, indexers, and frontends on maki.finance with @maki-studio/sdk: typed reads and writes, exact quote math, and event streaming."
+description: "Build bots, indexers, and frontends on veto.fun with @maki-studio/sdk: typed reads and writes, exact quote math, and event streaming."
 icon: "js"
 ---
 
-`@maki-studio/sdk` is the official TypeScript SDK for the maki.finance protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading against the launch pool, quoting, fee claims, and event streaming.
+`@maki-studio/sdk` is the official TypeScript SDK for the veto.fun protocol. It's a thin, fully-typed layer over [viem](https://viem.sh) (its only peer dependency) covering the entire protocol surface: launching tokens, trading against the launch pool, quoting, fee claims, and event streaming.
 
 ```bash
 npm install @maki-studio/sdk viem
@@ -78,8 +78,8 @@ The token address is not knowable in advance (the CREATE2 salt is mined on-chain
 import { Venue } from "@maki-studio/sdk";
 
 const { token, pool, venue, positionId, devBuyTokensOut } = await maki.write.launch({
-  name: "Maki Star",
-  symbol: "MAKI",
+  name: "Veto Star",
+  symbol: "VETO",
   metadataURI: "ipfs://Qm…",       // image + description, pinned to IPFS
   venue: Venue.SUSHI,              // or Venue.UNISWAP
   devBuyEth: parseEther("0.5"),    // optional first buy, before the public
@@ -237,7 +237,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 | `SlippageExceeded` | Price moved past your `slippageBps`; re-quote and retry |
 | `Expired` | The `deadline` passed before inclusion |
 | `UnknownPool` | The pool is not a launch pool derivable from a known factory |
-| `UnknownToken` | Address is not a maki.finance launch |
+| `UnknownToken` | Address is not a veto.fun launch |
 | `InsufficientCreationFee` | `createToken` value didn't cover the flat fee (the SDK adds it for you) |
 | `UnknownVenue` | Venue id is neither 0 (Uniswap) nor 1 (Sushi) |
 | `NotFeeRecipient` | `setFeeRecipient` from a non-recipient address |

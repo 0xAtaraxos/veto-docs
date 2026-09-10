@@ -1,6 +1,6 @@
 ---
 title: "Contract reference"
-description: "The maki.finance smart contracts (MakiDotFun, MakiToken, MakiFeeLocker, and MakiSwapRouter): functions, events, and errors."
+description: "The veto.fun smart contracts (MakiDotFun, MakiToken, MakiFeeLocker, and MakiSwapRouter): functions, events, and errors."
 icon: "file-contract"
 ---
 
@@ -148,7 +148,7 @@ event Swap(address indexed pool, address indexed trader, bool indexed isBuy,
 
 Errors: `UnknownPool`, `NotWethPool`, `Expired`, `SlippageExceeded`, `ZeroAmount`, `NotPool`, `OnlyWeth`, `EthTransferFailed`, `ZeroAddress`
 
-The router's `Swap` event is trader-indexed, which makes per-wallet activity scans cheap. It only covers trades routed through Maki; the pool's own `Swap` event is the complete record.
+The router's `Swap` event is trader-indexed, which makes per-wallet activity scans cheap. It only covers trades routed through Veto; the pool's own `Swap` event is the complete record.
 
 ## Launch constants
 

@@ -1,12 +1,12 @@
 ---
 title: "Venues: SushiSwap & Uniswap"
-description: "Every maki.finance token lives in a real SushiSwap or Uniswap v3 pool from block one, visible to every major trading platform."
+description: "Every veto.fun token lives in a real SushiSwap or Uniswap v3 pool from block one, visible to every major trading platform."
 icon: "arrows-split-up-and-left"
 ---
 
-A maki.finance token doesn't trade on maki.finance. It trades on a real DEX, from its very first block. At launch the creator picks the venue, and the token lives there forever:
+A veto.fun token doesn't trade on veto.fun. It trades on a real DEX, from its very first block. At launch the creator picks the venue, and the token lives there forever:
 
-- **SushiSwap** is the default and the venue we work closely with on Robinhood Chain. Most Maki launches open here.
+- **SushiSwap** is the default and the venue we work closely with on Robinhood Chain. Most Veto launches open here.
 - **Uniswap v3** is available as an option at launch for creators who prefer it.
 
 Both are canonical v3 deployments sharing the same WETH and the same 1% fee tier, so a launch opens with *identical* geometry either way: same opening price, same locked position, same fee economics. One launchpad, one registry, one fee ledger. Only the pool's home differs.
@@ -27,7 +27,7 @@ There is no "on the launchpad" phase where only we can see your token. It is bor
 
 ## How trading works from second zero
 
-Freshly created pools have one practical problem: DEX routing APIs haven't indexed them yet, and on this chain Sushi's router depends on exactly such an API. So the Maki app trades through **MakiSwapRouter**, a minimal contract that swaps native ETH against the pool directly:
+Freshly created pools have one practical problem: DEX routing APIs haven't indexed them yet, and on this chain Sushi's router depends on exactly such an API. So the Veto app trades through **MakiSwapRouter**, a minimal contract that swaps native ETH against the pool directly:
 
 - Works the instant the pool exists, identically on both venues.
 - Stateless, ownerless, immutable. It only ever swaps against a pool it re-derived from a known factory.

@@ -1,16 +1,16 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Maki",
-  "description": "Maki (maki.finance) is the memecoin launchpad on Robinhood Chain. Launch a token in one transaction, straight into a live SushiSwap or Uniswap pool with liquidity locked forever.",
+  "name": "Veto",
+  "description": "Veto (veto.fun) is the memecoin launchpad on Robinhood Chain. Launch a token in one transaction, straight into a live SushiSwap or Uniswap pool with liquidity locked forever.",
   "colors": {
-    "primary": "#ED5B25",
-    "light": "#FF8A50",
-    "dark": "#C2410C"
+    "primary": "#4A90FF",
+    "light": "#7AB0FF",
+    "dark": "#2F74E6"
   },
   "logo": {
-    "light": "/logo/maki-mark.png",
-    "dark": "/logo/maki-mark.png"
+    "light": "/logo/veto-mark-black.png",
+    "dark": "/logo/veto-mark-white.png"
   },
   "favicon": "/favicon.png",
   "banner": {
@@ -20,30 +20,24 @@
   "appearance": {
     "default": "dark"
   },
-  "background": {
-    "color": {
-      "light": "#FBF7EE",
-      "dark": "#131118"
-    }
-  },
   "navbar": {
     "links": [
       {
-        "href": "https://discord.gg/makidotfinance",
+        "href": "https://discord.gg/vetodotfun",
         "label": "Support"
       },
       {
-        "href": "https://maki.finance",
+        "href": "https://veto.fun",
         "label": "Launch App"
       }
     ]
   },
   "footer": {
     "socials": {
-      "website": "https://maki.finance",
-      "x": "https://x.com/MakiDotFinance",
-      "telegram": "https://t.me/MakiDotFinance",
-      "discord": "https://discord.gg/makidotfinance"
+      "website": "https://veto.fun",
+      "x": "https://x.com/VetoDotFun",
+      "telegram": "https://t.me/vetodotfun",
+      "discord": "https://discord.gg/vetodotfun"
     }
   },
   "navigation": {
