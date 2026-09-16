@@ -44,7 +44,7 @@ Value transfers to `address(0)` revert on Arc, `PREVRANDAO` is always 0, and blo
 There is no intermediate trading phase and no migration step. [`createToken`](/protocol/direct-listing) lists a token directly on **Uniswap v3** in one transaction:
 
 1. deploys the ERC-20 (a CREATE2 salt is mined so the token always sorts above USDC),
-2. creates and initializes the USDC/token 1% pool at the global opening price,
+2. creates and initializes the USDC/token pool at the global opening price, on the fee tier the creator picked (0.3% or 1%),
 3. mints the **entire 1B supply** as one single-sided position spanning `[TICK_LOWER, startTick]` into the fee locker, forever,
 4. optionally executes the creator's dev buy before anyone else can reach the pool.
 
@@ -92,7 +92,7 @@ Canonical Uniswap v3 on Arc, which the launchpad builds on: factory `0xf0db7b583
 
 ```text
 TOTAL_SUPPLY       = 1_000_000_000 × 1e18   // per token, all of it in the locked position
-POOL_FEE           = 10000                  // 1% tier
+POOL_FEES          = 3000 | 10000           // 0.3% or 1%, creator's choice, fixed per token
 TICK_SPACING       = 200
 TICK_LOWER         = -887200                // bottom of the locked position
 startTick          = read launchGeometry()  // opening price: a fixed USD FDV, identical for every launch

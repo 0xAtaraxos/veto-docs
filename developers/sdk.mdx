@@ -16,7 +16,7 @@ npm install @vetodotfun/sdk viem
 
 Three protocol facts shape the API:
 
-- **One venue, quoted in USDC.** Every launch opens a Uniswap v3 pool on the 1% tier with USDC as token0. `Venue.UNISWAP` (0) is the only venue id; it is kept in the API so the contract's `uint8` stays explicit. There is a single launchpad, a single `TokenCreated` stream, and a single fee ledger.
+- **One venue, quoted in USDC.** Every launch opens a Uniswap v3 pool on the 0.3% or 1% tier (creator's choice) with USDC as token0. `Venue.UNISWAP` (0) is the only venue id; it is kept in the API so the contract's `uint8` stays explicit. There is a single launchpad, a single `TokenCreated` stream, and a single fee ledger.
 - **The launchpad does not intermediate trades.** After launch, trading is an ordinary v3 swap. `write.buy` / `write.sell` go through the Veto swap router straight against the pool, with native USDC in and out.
 - **The opening price is a permanent floor.** No liquidity was ever minted above `startTick`, so a sell can never push the price above the launch price. `quoteSell` reports this as `cappedAtOpeningPrice` rather than pretending the fill exists.
 
@@ -70,7 +70,7 @@ Three namespaces do all the work:
 
 ## Launching a token
 
-One transaction deploys the ERC-20, opens the USDC/token 1% pool at the global opening price, locks the entire 1B supply as a single-sided position in the fee locker, and optionally executes the creator's dev buy before anyone else can reach the pool. The flat creation fee (read live from `feeConfig()`) is added to the transaction value automatically, so `devBuyEth` is exactly the dev buy, in USDC.
+One transaction deploys the ERC-20, opens the USDC/token pool on the chosen fee tier at the global opening price, locks the entire 1B supply as a single-sided position in the fee locker, and optionally executes the creator's dev buy before anyone else can reach the pool. The flat creation fee (read live from `feeConfig()`) is added to the transaction value automatically, so `devBuyEth` is exactly the dev buy, in USDC.
 
 The token address is not knowable in advance (the CREATE2 salt is mined on-chain so the token sorts above USDC), so `launch` waits for the receipt and decodes it for you:
 

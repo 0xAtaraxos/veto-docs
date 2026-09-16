@@ -160,7 +160,8 @@ The router's `Swap` event is trader-indexed, which makes per-wallet activity sca
 
 ```solidity
 uint256 constant TOTAL_SUPPLY = 1_000_000_000e18;  // per token, 100% into the locked position
-uint24  POOL_FEE     = 10000;    // 1% tier
+uint24  POOL_FEE_LOW  = 3000;    // 0.3% tier, spacing 60, tickLower -887220
+uint24  POOL_FEE_HIGH = 10000;   // 1% tier,   spacing 200, tickLower -887200
 int24   TICK_SPACING = 200;
 int24   TICK_LOWER   = -887200;  // bottom of the locked position
 int24   startTick;               // constructor immutable: the fixed USD opening FDV
