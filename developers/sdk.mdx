@@ -48,7 +48,7 @@ const veto = createVeto({
 ```
 
 <Warning>
-  The Arc deployment is in progress: both `"arc"` and `"arcTestnet"` are guarded placeholders until the contracts are live, and the SDK throws a descriptive error naming the missing address. For development, fork Arc mainnet with `arc-anvil` and pass a custom deployment object (below).
+  `deployments.arc` is filled in at launch. Until then the built-in network entries are guarded placeholders that throw a descriptive error; for development, fork Arc mainnet with `arc-anvil` and pass a custom deployment object (below).
 </Warning>
 
 Three namespaces do all the work:
@@ -276,3 +276,4 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 <Card title="Contract reference" icon="file-contract" href="/developers/contracts">
   Prefer to integrate at the contract level? Full function, event, and error reference.
 </Card>
+

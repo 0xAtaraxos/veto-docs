@@ -71,22 +71,9 @@ Only the launchpad and swap router addresses are needed to integrate. The locker
 
 ## Contract addresses
 
-<Warning>
-  The Arc deployment is in progress. Addresses will appear here and in `@vetodotfun/sdk`'s `deployments.arc` the moment they are live and source-verified; until then the SDK's built-in network entries are guarded placeholders that throw a descriptive error.
-</Warning>
-
-| Contract | Arc mainnet (5042) |
-| --- | --- |
-| Launchpad | pending |
-| FeeLocker | pending |
-| SwapRouter | pending |
-| Treasury / owner | pending |
+Contract addresses are published here, in `@vetodotfun/sdk`'s `deployments.arc`, and on [explorer.arc.io](https://explorer.arc.io) (source-verified) at launch. Until then, develop against an `arc-anvil` fork of Arc mainnet ([Arc Foundry](https://github.com/circlefin/arc-foundry)) and pass the fork's deployment object to the SDK; Uniswap v3 is not deployed on Arc testnet.
 
 Canonical Uniswap v3 on Arc, which the launchpad builds on: factory `0xf0db7b58379503491d857db50ac9ece64c653918`, position manager `0x39654a85a4c05127f5fd6ed22caec077a0fb1377`.
-
-<Note>
-  Uniswap v3 is not deployed on Arc testnet, so neither are the Veto contracts. Develop against an `arc-anvil` fork of mainnet ([Arc Foundry](https://docs.arc.io/arc/references/evm-differences)) and pass the fork's deployment object to the SDK.
-</Note>
 
 ## Key protocol constants
 
@@ -114,3 +101,4 @@ veto.fun's own backend exposes a few read-only endpoints that are handy for inte
 | `GET https://api.veto.fun/api/launchpad/recipient/:token` | `{ creator, feeRecipient, creatorLpShareBps }` — who the creator fee stream pays |
 
 Market data (candles, trades, holders) is not served by us: read it from the pool directly, or from GeckoTerminal (network `arc`) / DexScreener (chain `arc`), which index every launch pool from its first swap.
+
