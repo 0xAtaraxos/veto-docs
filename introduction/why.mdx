@@ -28,13 +28,13 @@ Veto's answer is to remove the trust from the equation entirely. Not "we won't",
 - **Every launch opens identically.** Same opening price, same locked-supply pool, for every token including anything we launch. There is no function for presales or team allocations, so there are no presales or team allocations.
 - **Liquidity locked forever, from block one.** The entire supply is minted as liquidity straight into a vault with no withdrawal function. Not timelocked. Gone, permanently, for everyone including us.
 - **Fee terms frozen at launch.** Every token snapshots its fee split the moment it's created. Nobody, including the protocol owner, can change an existing token's terms. Ever.
-- **No walled garden.** Tokens list directly on SushiSwap or Uniswap, so every wallet, aggregator, and charting platform on the chain can see and trade them from the first swap. We compete on the app, not on locking your token into it.
+- **No walled garden.** Tokens list directly on Uniswap v3, so every wallet, aggregator, and charting platform on the chain can see and trade them from the first swap. We compete on the app, not on locking your token into it.
 
 The full list of what can never happen is in the [security model](/protocol/security). It's a short read because the admin surface is nearly empty, and that's the point.
 
 ## Because every chain gets one shot at this
 
-Robinhood Chain is new: an Arbitrum Orbit L2 with ETH gas, fast blocks, and no incumbent. Every chain gets one defining launchpad, and it's decided early. We built Veto natively for this chain, from the contracts up, working closely with the DEX infrastructure that's already here, to be that.
+Arc is new: Circle's USDC-native Layer 1 with BlackRock, DTCC and Visa running its validators, sub-second finality, and no incumbent. Every chain gets one defining launchpad, and it's decided early. We built Veto natively for this chain, from the contracts up: the first launchpad where every price, fee and creator reward is a dollar amount because the chain itself runs on USDC.
 
 ---
 
@@ -45,6 +45,6 @@ Robinhood Chain is new: an Arbitrum Orbit L2 with ETH gas, fast blocks, and no i
     One transaction: token, pool, locked liquidity. The whole story in one page.
   </Card>
   <Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
-    0.001 ETH and one transaction. See you in the trenches.
+    One flat USDC fee and one transaction. See you in the trenches.
   </Card>
 </CardGroup>

@@ -1,0 +1,137 @@
+---
+title: "Integrate token creation"
+description: "Add a Veto launch button to your own app, wallet or bot: pin metadata, call launch, route the creator fee stream, and track the result."
+icon: "rocket"
+---
+
+Anything that can sign an Arc transaction can launch a Veto token. This guide is the end-to-end creation flow with `@vetodotfun/sdk`; every step is also doable at the contract level ([reference](/developers/contracts)).
+
+```bash
+npm install @vetodotfun/sdk viem
+```
+
+<Steps>
+  <Step title="Connect to Arc">
+    ```ts
+    import { createPublicClient, createWalletClient, custom, http } from "viem";
+    import { createVeto, arc } from "@vetodotfun/sdk";
+
+    const publicClient = createPublicClient({ chain: arc, transport: http() });
+    // In a browser, wrap the user's wallet; in a bot, use privateKeyToAccount
+    const walletClient = createWalletClient({ chain: arc, transport: custom(window.ethereum) });
+
+    const veto = createVeto({ publicClient, walletClient, network: "arc" });
+    ```
+
+    Gas on Arc is USDC. The user needs a few USDC in the wallet: the flat creation fee, the optional dev buy, and about $0.01 of gas.
+  </Step>
+
+  <Step title="Pin the metadata">
+    The contract stores one string, `metadataURI`. Point it at a JSON document (IPFS is conventional) with at least:
+
+    ```json
+    {
+      "name": "My Coin",
+      "symbol": "COIN",
+      "description": "…",
+      "image": "ipfs://…",
+      "socials": { "x": "https://x.com/…", "telegram": "https://t.me/…", "website": "https://…" }
+    }
+    ```
+
+    veto.fun reads `description`, `image` and `socials` from this document when it indexes the launch, so tokens created through your integration show up on veto.fun fully populated.
+  </Step>
+
+  <Step title="Read the live config">
+    Never hard-code the fee or the split; the owner can tune them for future launches.
+
+    ```ts
+    const { creationFee, creatorLpShareBps } = await veto.read.getFees();
+    // creationFee: bigint (native USDC, 18 dec)  creatorLpShareBps: bigint (e.g. 5000n = 50%)
+    const { startTick, startSqrtPriceX96 } = await veto.read.launchGeometry();
+    ```
+  </Step>
+
+  <Step title="Launch">
+    ```ts
+    import { Venue, quoteBuy, minAfterSlippage, openingPoolState } from "@vetodotfun/sdk";
+    import { parseEther } from "viem";
+
+    const devBuy = parseEther("25"); // 25 USDC, optional
+
+    // Quote the dev buy against the opening geometry so minTokensOut is meaningful
+    const q = quoteBuy(openingPoolState(startSqrtPriceX96), devBuy);
+
+    const { token, pool, positionId, devBuyTokensOut, hash } = await veto.write.launch({
+      name: "My Coin",
+      symbol: "COIN",
+      metadataURI: "ipfs://…",
+      venue: Venue.UNISWAP,
+      devBuyEth: devBuy,
+      minTokensOut: minAfterSlippage(q.tokensOut, 100),
+    });
+    ```
+
+    `launch` simulates, sends, waits for the receipt and decodes `TokenCreated` for you. The creation fee is added to `msg.value` automatically, so `devBuyEth` is exactly the dev buy. The token address is not knowable in advance (the CREATE2 salt is mined on-chain), so always take it from the result.
+  </Step>
+
+  <Step title="Route the creator fee stream (optional)">
+    By default the creator's share of pool fees is paid to the launching wallet. To pay a different wallet — a team multisig, a partner, your own platform — redirect it right after launch:
+
+    ```ts
+    await veto.write.setFeeRecipient(token, "0xRecipient…");
+    ```
+
+    Only the current recipient can call this, and it moves the **whole** creator share. veto.fun tracks `FeeRecipientSet` and shows the recipient wallet the token in its studio, so whoever you route to can claim without any help from you.
+
+    <Note>
+      A `feeRecipient` parameter on `createToken` itself (one transaction) ships with the Arc contract generation; until then it is this second call.
+    </Note>
+  </Step>
+
+  <Step title="Show the result">
+    Everything you need to render a coin page is on-chain or one public call away:
+
+    ```ts
+    const record = await veto.read.getTokenRecord(token);
+    // { creator, creatorLpShareBps, venue, pool, positionId }
+    const meta = await veto.read.getTokenMetadata(token);
+    const state = await veto.read.getPoolState(record.pool);
+    ```
+
+    - Coin page on veto.fun: `https://veto.fun/coin/${token}`
+    - Pool on Uniswap and every chart site (GeckoTerminal network id `arc`, DexScreener chain `arc`) from the first swap.
+    - Who is paid: `GET https://api.veto.fun/api/launchpad/recipient/${token}` → `{ creator, feeRecipient, creatorLpShareBps }`.
+  </Step>
+</Steps>
+
+## Claiming as an integrator
+
+If you route fee streams to your own wallet you can harvest them yourself, in bulk, with no dependency on veto.fun:
+
+```ts
+for (const token of myTokens) {
+  await veto.write.collectFees(token); // pays recipient AND treasury at the token's snapshotted split
+}
+```
+
+`collectFees` is callable by the recipient, the treasury, or Veto's claim authority, and the money only ever goes to the recipient; no caller can redirect it. Claimable amounts can be previewed with a static call (`publicClient.simulateContract` on the locker's `collectFees`), which is exactly what veto.fun's studio does.
+
+## Watching launches
+
+```ts
+const stop = veto.watch(
+  {
+    onTokenCreated: (e) => index(e.token, e.pool, e.creator),
+    onFeeRecipientSet: (e) => setRecipient(e.token, e.recipient),
+    onBlockProcessed: (n) => saveCursor(n),
+  },
+  { fromBlock: await loadCursor(), pollIntervalMs: 1000, chunkSize: 2000n },
+);
+```
+
+Arc's public RPC has no websocket and caps `eth_getLogs` at about 2000 blocks per call; the watcher is built around chunked polling for exactly that reason. Blocks are ~500 ms and final on inclusion, so one confirmation is enough.
+
+<Card title="Full SDK reference" icon="js" href="/developers/sdk">
+  Every read, write, quote and event handler.
+</Card>

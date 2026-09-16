@@ -1,14 +1,18 @@
 ---
 title: "Contract reference"
-description: "The veto.fun smart contracts (MakiDotFun, MakiToken, MakiFeeLocker, and MakiSwapRouter): functions, events, and errors."
+description: "The veto.fun smart contracts (launchpad, token, fee locker and swap router): functions, events, and errors."
 icon: "file-contract"
 ---
 
-Four contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **MakiDotFun** and **MakiSwapRouter** addresses. Everything else (lockers, treasury, WETH, position managers, factories) is discoverable from the launchpad.
+Four contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **launchpad** and **swap router** addresses. Everything else (locker, treasury, quote token, position manager, factory) is discoverable from the launchpad.
+
+<Note>
+  This reference describes the current contract generation, which is being ported to Arc (USDC quote token instead of WETH, a single Uniswap venue, a `feeRecipient` parameter on `createToken`, 50% creator share). Contract names below are the Solidity names (`MakiDotFun`, `MakiToken`, `MakiFeeLocker`, `MakiSwapRouter`); they will be confirmed together with the Arc addresses.
+</Note>
 
 ## MakiDotFun
 
-The singleton launchpad and registry, serving both venues: SushiSwap V3 (`venue = 1`) and Uniswap v3 (`venue = 0`).
+The singleton launchpad and registry. On Arc there is one venue, Uniswap v3 (`venue = 0`); the parameter is kept so the ABI stays explicit.
 
 ### Launching
 
@@ -22,9 +26,9 @@ function createToken(
 ) external payable returns (address token);
 ```
 
-One transaction does everything. It deploys a `MakiToken` (mining a CREATE2 salt so the token sorts above WETH), creates and initializes the WETH/token 1% pool on the chosen venue at the global opening price (`startTick` = 203200), mints the entire 1B supply as a single-sided position spanning `[TICK_LOWER, startTick]` straight into that venue's MakiFeeLocker, and executes the optional dev buy before anyone else can reach the pool. Emits `TokenCreated` (and `DevBuy` if there was one).
+One transaction does everything. It deploys a `MakiToken` (mining a CREATE2 salt so the token sorts above USDC), creates and initializes the USDC/token 1% pool at the global opening price (`startTick`, a constructor immutable), mints the entire 1B supply as a single-sided position spanning `[TICK_LOWER, startTick]` straight into the fee locker, and executes the optional dev buy before anyone else can reach the pool. Emits `TokenCreated` (and `DevBuy` if there was one).
 
-`msg.value` must cover the flat creation fee (read it from `feeConfig()`; currently 0.001 ETH); any ETH beyond it is the dev buy, with `minTokensOut` protecting it against front-running. The current global `creatorLpShareBps` is snapshotted into the token's record and never changes afterwards.
+`msg.value` (native USDC, 18 decimals) must cover the flat creation fee (read it from `feeConfig()`); anything beyond it is the dev buy, with `minTokensOut` protecting it against front-running. The current global `creatorLpShareBps` is snapshotted into the token's record and never changes afterwards.
 
 The venue is frozen into the token: a token lives on exactly one DEX, forever. And because no liquidity exists above `startTick`, the opening price is a permanent floor. See [direct listing](/protocol/direct-listing) and [venues](/protocol/venues).
 
@@ -56,7 +60,7 @@ function TICK_SPACING() external view returns (int24);         // 200
 function POOL_FEE() external view returns (uint24);            // 10000 (1%)
 ```
 
-Constructor immutables, identical on both venues. The opening price works out to about 667.46M tokens per ETH, an FDV of about 1.4982 ETH.
+Constructor immutables, identical for every launch. On Arc the opening price is set so every token opens at the same fixed USD FDV.
 
 ### Venue discovery
 
@@ -76,7 +80,7 @@ function setFeeRecipient(address token, address newRecipient) external; // curre
 function claimProtocolFees() external;                                  // treasury only; pays accrued creation fees
 ```
 
-**Fee model:** there is **no per-trade launchpad fee**. Creator and protocol revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the venue's FeeLocker (below) and split at the token's snapshotted `creatorLpShareBps` (3000 bps to the creator under the current config). The launchpad itself only collects the flat creation fee. The global `feeConfig` is owner-tunable within a hard cap (`MAX_CREATION_FEE` = 0.1 ETH), and applies to future launches only. See [fees](/protocol/fees).
+**Fee model:** there is **no per-trade launchpad fee**. Creator and protocol revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the FeeLocker (below) and split at the token's snapshotted `creatorLpShareBps` (5000 bps to the creator side under the Arc config). The launchpad itself only collects the flat creation fee. The global `feeConfig` is owner-tunable within a hard cap (`MAX_CREATION_FEE`), and applies to future launches only. See [fees](/protocol/fees).
 
 ### Owner surface (complete list)
 
@@ -129,15 +133,15 @@ function collectFees(address token) external returns (uint256 amount0, uint256 a
     // fee recipient, treasury, or claimAuthority only
 ```
 
-The locker has no function that can transfer a position out; locked liquidity is permanent by construction. Each harvest collects the whole position's accrued 1% swap fees at once and splits them creator/treasury at the token's launch-time snapshot, read live from the launchpad's `creatorLpShareBpsOf(token)` (30/70 under the current config). One call always pays both parties. Emits `FeesCollected` per harvest and `PositionLocked` at launch.
+The locker has no function that can transfer a position out; locked liquidity is permanent by construction. Each harvest collects the whole position's accrued 1% swap fees at once and splits them creator/treasury at the token's launch-time snapshot, read live from the launchpad's `creatorLpShareBpsOf(token)` (50/50 under the Arc config). One call always pays both parties. Emits `FeesCollected` per harvest and `PositionLocked` at launch.
 
 ## MakiSwapRouter
 
-Uniswap v3 has a SwapRouter02 on this chain; Sushi does not (RedSnwapper needs off-chain route bytes that don't exist for a pool seconds old). MakiSwapRouter swaps directly against the pool with its own callback: identical on both venues, live the instant the pool exists, native ETH in and out. It is stateless, ownerless, and immutable, and it only swaps against a pool it re-derived from a known factory, so a hostile address can't be passed off as a pool.
+Routing APIs do not know about a pool that is seconds old, which is exactly when a launchpad needs trading to work. The swap router swaps directly against the pool with its own callback: live the instant the pool exists, native USDC in and out. It is stateless, ownerless, and immutable, and it only swaps against a pool it re-derived from a known factory, so a hostile address can't be passed off as a pool.
 
 ```solidity
 function buy(address pool, uint256 minTokensOut, uint256 deadline)
-    external payable returns (uint256 tokensOut);    // msg.value = ETH in
+    external payable returns (uint256 tokensOut);    // msg.value = USDC in (native units)
 
 function sell(address pool, uint256 tokenAmount, uint256 minEthOut, uint256 deadline)
     external returns (uint256 ethOut);               // requires prior approve of the router
@@ -154,24 +158,25 @@ The router's `Swap` event is trader-indexed, which makes per-wallet activity sca
 
 ```solidity
 uint256 constant TOTAL_SUPPLY = 1_000_000_000e18;  // per token, 100% into the locked position
-uint24  POOL_FEE     = 10000;    // 1% tier on both venues
+uint24  POOL_FEE     = 10000;    // 1% tier
 int24   TICK_SPACING = 200;
 int24   TICK_LOWER   = -887200;  // bottom of the locked position
-int24   startTick    = 203200;   // ≈667.46M tokens/ETH, ≈1.4982 ETH FDV
-uint256 constant MAX_CREATION_FEE = 0.1 ether;  // hard cap on the tunable creation fee
-uint8   VENUE_UNISWAP = 0;  uint8 VENUE_SUSHI = 1;
+int24   startTick;               // constructor immutable: the fixed USD opening FDV
+uint256 constant MAX_CREATION_FEE;              // hard cap on the tunable creation fee
+uint8   VENUE_UNISWAP = 0;
 ```
 
 ## Deployed addresses
 
-Live on Robinhood Chain mainnet (4663) since block 29,588,143, source-verified on Blockscout:
+<Warning>
+  The Arc deployment is in progress. Addresses will be published here, on [explorer.arc.io](https://explorer.arc.io) (source-verified) and in `@vetodotfun/sdk`'s `deployments.arc` the moment they are live.
+</Warning>
 
-| Contract | Address |
+| Contract | Arc mainnet (5042) |
 | --- | --- |
-| MakiDotFun | [`0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e`](https://robinhoodchain.blockscout.com/address/0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e) |
-| MakiFeeLocker (Sushi) | [`0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f`](https://robinhoodchain.blockscout.com/address/0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f) |
-| MakiFeeLocker (Uniswap) | [`0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86`](https://robinhoodchain.blockscout.com/address/0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86) |
-| MakiSwapRouter | [`0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d`](https://robinhoodchain.blockscout.com/address/0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d) |
-| Treasury / owner | [`0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096`](https://robinhoodchain.blockscout.com/address/0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096) |
+| Launchpad | pending |
+| FeeLocker | pending |
+| SwapRouter | pending |
+| Treasury / owner | pending |
 
 See [developer overview](/developers/overview) for chain details and the architecture diagram.

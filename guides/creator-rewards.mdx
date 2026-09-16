@@ -1,52 +1,58 @@
 ---
 title: "Creator Rewards"
-description: "How creators earn on veto.fun: 30% of their token's pool swap fees, from the first trade, forever."
+description: "How creators earn on veto.fun: 50% of their token's pool swap fees, paid in USDC, from the first trade, forever."
 icon: "gift"
 ---
 
-Launching a token on veto.fun gives you a permanent, on-chain fee stream. Not an airdrop, not an allocation you have to dump: a revenue share that pays as long as your coin trades. And because your token trades in a real DEX pool from block one, the stream starts with its very first swap.
+Launching a token on veto.fun gives you a permanent, on-chain fee stream. Not an airdrop, not an allocation you have to dump: a revenue share that pays as long as your coin trades. And because your token trades in a real Uniswap pool from block one, the stream starts with its very first swap.
 
 {/* Re-record the claim flow in the Veto UI, drop at /videos/claim.mp4 and uncomment:
 
-<Frame caption="Claiming accrued fees from the studio: one signature, ETH in your wallet.">
+<Frame caption="Claiming accrued fees from the studio: one signature, USDC in your wallet.">
   <video autoPlay muted loop playsInline src="/videos/claim.mp4" />
 </Frame> */}
 
 ## The stream
 
-Your token's entire supply sits as locked liquidity in its [SushiSwap or Uniswap pool](/protocol/venues). Every swap pays the pool's **1% fee**, that fee accrues to the locked position, and each harvest is split:
+Your token's entire supply sits as locked liquidity in its [Uniswap v3 pool](/protocol/venues). Every swap pays the pool's **1% fee**, that fee accrues to the locked position, and each harvest is split:
 
 | Recipient | Share |
 | --- | --- |
-| Creator (you) | 30% |
-| Protocol treasury | 70% |
+| Creator (you, or the wallet you choose) | 50% |
+| Protocol treasury | 50% |
 
 Your token's fee terms are **snapshotted on-chain the moment you launch** and can never change afterwards. Not by you, not by the platform. (The platform can tune the rates offered to *future* launches.)
 
-Every swap of your token, from any interface, aggregator, or bot on Robinhood Chain, earns you fees. This stream has no expiry, and payouts arrive in ETH and, when the position has collected token-side fees, in your token as well.
+Every swap of your token, from any interface, aggregator, or bot on Arc, earns you fees. This stream has no expiry, and payouts arrive in **USDC** and, when the position has collected token-side fees, in your token as well.
 
-## Claiming
+## Choosing who gets paid
 
-<Steps>
-  <Step title="Open your dashboard">
-    Go to your profile on [veto.fun](https://veto.fun). Wallets that have launched at least one token see a creator dashboard with claimable and lifetime earnings per token.
-  </Step>
-  <Step title="Claim">
-    Hit claim on a token (or claim across your portfolio). One signature; the FeeLocker harvests the pool fees and pays your share out directly.
-  </Step>
-</Steps>
+On the create page, **Fees go to** lets you keep the stream yourself or route it to any other wallet: a team multisig, a friend, a community treasury. The recipient sees the token in their own studio and can claim without you.
 
-<Note>
-  Claims are **pull-based and protected**: only you (the registered fee recipient) or the platform's claimer service can trigger a payout, and the money only ever goes to you; no caller can redirect it. The platform periodically batch-claims on creators' behalf, so fees may simply arrive in your wallet without you doing anything.
-</Note>
-
-## Redirecting your fee stream
-
-The current fee recipient of a token can reassign the stream to a different address. This is useful for routing earnings to a multisig, a splitter contract, or a new wallet.
+The current recipient can redirect the stream again later from the studio. It is always the **whole** creator share that moves; there is no partial split between two wallets.
 
 <Warning>
   Redirecting the fee stream is irreversible unless the *new* recipient redirects it back. Double-check the address.
 </Warning>
+
+## Claiming
+
+<Steps>
+  <Step title="Open your studio">
+    Go to **Studio** on [veto.fun](https://veto.fun). Wallets that launched a token, or that a fee stream was routed to, see every such token with claimable and lifetime earnings.
+  </Step>
+  <Step title="Claim">
+    Hit claim on a token (or claim across your portfolio). One signature; the fee locker harvests the pool fees and pays your share out directly, in USDC.
+  </Step>
+</Steps>
+
+<Note>
+  Claims are **pull-based and protected**: only the registered fee recipient, the treasury, or the platform's claimer service can trigger a payout, and the money only ever goes to the recipient; no caller can redirect it. The platform periodically batch-claims on creators' behalf, so fees may simply arrive in your wallet without you doing anything.
+</Note>
+
+## For developers
+
+Integrating creation into your own product, and want the fee stream to land in your wallet? See [Integrate token creation](/developers/launch-integration). Who a token pays is public: `GET /api/launchpad/recipient/:token`.
 
 ## What creators can't do
 

@@ -1,6 +1,6 @@
 ---
 title: "Trading"
-description: "How buying and selling works on veto.fun: ordinary DEX swaps against the token's SushiSwap or Uniswap pool, from the first block."
+description: "How buying and selling works on veto.fun: ordinary DEX swaps against the token's Uniswap v3 pool, in USDC, from the first block."
 icon: "chart-line-up"
 ---
 
@@ -10,25 +10,25 @@ icon: "chart-line-up"
 </Frame>
 */}
 
-Every veto.fun token has a live [SushiSwap or Uniswap pool](/protocol/venues) from the block it launched in, so every trade is an ordinary DEX swap. The token page gives you a widget with exact quotes; under the hood your trade goes straight against the pool, in native ETH.
+Every veto.fun token has a live [Uniswap v3 pool](/protocol/venues) from the block it launched in, so every trade is an ordinary DEX swap. The token page gives you a widget with exact quotes; under the hood your trade goes straight against the pool, in USDC.
 
 ## Buying
 
 <Steps>
   <Step title="Enter an amount">
-    Type how much ETH to spend. The widget quotes the exact token output, the pool's 1% fee, and the price impact, computed with the same math the chain uses.
+    Type how much USDC to spend. The widget quotes the exact token output, the pool's 1% fee, and the price impact, computed with the same math the chain uses.
   </Step>
   <Step title="Check slippage">
-    Your transaction includes a minimum-receive amount. If the pool moves past your tolerance before your transaction lands, it reverts and your ETH stays in your wallet (minus gas). Default tolerance is 1%; adjust it in the widget settings.
+    Your transaction includes a minimum-receive amount. If the pool moves past your tolerance before your transaction lands, it reverts and your USDC stays in your wallet (minus gas). Default tolerance is 1%; adjust it in the widget settings.
   </Step>
   <Step title="Confirm">
-    Sign the transaction. Tokens arrive as soon as it confirms, usually within a couple of seconds on Robinhood Chain.
+    Sign the transaction. Tokens arrive as soon as it confirms, usually within a second on Arc.
   </Step>
 </Steps>
 
 ## Selling
 
-Selling needs a one-time router approval for the token (the app bundles it as tightly as it can, and EIP-2612 permit is supported). You'll see the exact ETH output quoted before you sign, protected by the same slippage controls.
+Selling needs a one-time router approval for the token (the app bundles it as tightly as it can, and EIP-2612 permit is supported). You'll see the exact USDC output quoted before you sign, protected by the same slippage controls.
 
 <Info>
   **The price floor:** no liquidity exists above a token's opening price, so a sell can never execute above it. If your sell would cross the floor, the quote caps there and tells you, rather than pretending a fill exists.
@@ -36,7 +36,7 @@ Selling needs a one-time router approval for the token (the app bundles it as ti
 
 ## Trade anywhere
 
-You don't have to trade on veto.fun. The pool is a normal v3 pool on a major DEX, so wallets, aggregators, and bots that support SushiSwap or Uniswap on Robinhood Chain can trade it too. The app's own route (MakiSwapRouter) is simply the path that works from the token's very first second, before routing APIs have indexed the new pool.
+You don't have to trade on veto.fun. The pool is a normal v3 pool on a major DEX, so wallets, aggregators, and bots that support Uniswap on Arc can trade it too. The app's own route (the Veto swap router) is simply the path that works from the token's very first second, before routing APIs have indexed the new pool.
 
 ## Fees at a glance
 
@@ -44,7 +44,7 @@ You don't have to trade on veto.fun. The pool is a normal v3 pool on a major DEX
 | --- | --- | --- |
 | Launchpad trading fee | **none** | — |
 | Pool swap fee | 1% | Accrues to the locked liquidity; split 30/70 creator/treasury |
-| Network gas | typically a fraction of a cent | Robinhood Chain |
+| Network gas | about $0.01, paid in USDC | Arc |
 
 Full details in [Fees](/protocol/fees).
 
@@ -52,7 +52,7 @@ Full details in [Fees](/protocol/fees).
 
 - **Slippage exceeded.** The pool moved more than your tolerance; retry with a fresh quote.
 - **Sell capped at the floor.** Part of your sell would price above the opening price; sell less or wait for buys.
-- **Insufficient ETH.** Remember to leave room for gas.
+- **Insufficient USDC.** Remember to leave a little room for gas; it comes out of the same balance.
 
 <Warning>
   Meme coins are extremely volatile and most go to zero. Never trade more than you can afford to lose. See the [Risk Disclosure](/legal/risk-disclosure).

@@ -1,26 +1,28 @@
 ---
 title: "Fees"
-description: "What veto.fun charges: a flat 0.001 ETH to launch, no launchpad fee on trades, and the pool's own 1% swap fee split between creator and protocol."
+description: "What veto.fun charges: a flat USDC creation fee, no launchpad fee on trades, and the pool's own 1% swap fee split between creator and protocol."
 icon: "coins"
 ---
 
-The fee model is short enough to fit in three sentences. Launching costs a flat **0.001 ETH**. The launchpad takes **no fee on trades**. The only trading cost is the pool's own **1% v3 swap fee**, which accrues to the permanently locked liquidity position and is split between the token's creator and the protocol.
+The fee model is short enough to fit in three sentences. Launching costs a **flat creation fee in USDC**. The launchpad takes **no fee on trades**. The only trading cost is the pool's own **1% Uniswap v3 swap fee**, which accrues to the permanently locked liquidity position and is split between the token's creator and the protocol.
+
+Everything on Arc is denominated in USDC, gas included, so every number below is a dollar number.
 
 ## Launching
 
 | Item | Cost |
 | --- | --- |
-| Creation fee | 0.001 ETH, flat |
-| Liquidity you must provide | 0 ETH (the locked supply is the liquidity) |
-| Network gas | typically a fraction of a cent on Robinhood Chain |
+| Creation fee | Flat, in USDC (read live from `feeConfig()`; shown on the create page) |
+| Liquidity you must provide | 0 (the locked supply is the liquidity) |
+| Network gas | about $0.01 on Arc |
 
 The optional dev buy is not a fee: it's a normal first purchase at the public opening price, and the 1% pool fee applies to it like any other swap.
 
 ## Trading
 
-Every swap in the pool pays the standard v3 **1% fee tier**, on SushiSwap and Uniswap alike. That fee doesn't go to a market maker or to us off the top: it accrues to the pool's liquidity position, and the entire position belongs to the locked vault.
+Every swap in the pool pays the standard v3 **1% fee tier**. That fee doesn't go to a market maker or to us off the top: it accrues to the pool's liquidity position, and the entire position belongs to the locked vault.
 
-There are no deposit, withdrawal, account, or subscription fees of any kind, and no extra fee added by the Veto app or MakiSwapRouter.
+There are no deposit, withdrawal, account, or subscription fees of any kind, and no extra fee added by the Veto app or its swap router.
 
 ## Where the 1% goes
 
@@ -28,11 +30,11 @@ The locked position's accumulated fees can be collected at any time (by the toke
 
 | Recipient | Share |
 | --- | --- |
-| Token creator | 30% |
-| Protocol treasury | 70% |
+| Token creator (or the wallet they route it to) | 50% |
+| Protocol treasury | 50% |
 
 The split is immutable per token: whatever terms a token launched with, its pool pays out at those terms forever. This is the protocol's entire revenue model. If tokens don't trade, nobody earns.
 
 <Card title="Creator rewards" icon="hand-holding-dollar" href="/guides/creator-rewards">
-  How creators claim their 30% of pool fees, in ETH and tokens, any time.
+  How creators claim their share of pool fees, in USDC and tokens, any time.
 </Card>

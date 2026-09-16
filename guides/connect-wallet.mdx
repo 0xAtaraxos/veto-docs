@@ -1,56 +1,46 @@
 ---
 title: "Connect a Wallet"
-description: "Connect an EVM wallet to veto.fun and add Robinhood Chain."
+description: "Connect an EVM wallet to veto.fun and add the Arc network."
 icon: "wallet"
 ---
 
-veto.fun runs on **Robinhood Chain**, an EVM-compatible Arbitrum Orbit L2. Any standard Ethereum wallet works.
+veto.fun runs on **Arc**, Circle's EVM-compatible Layer 1. Any standard Ethereum wallet works: MetaMask, Rabby, Coinbase Wallet, Rainbow, or any injected/WalletConnect wallet. No email signup is required, though email and social login are available through an embedded wallet if you prefer.
 
-## Supported wallets
+## Add Arc to your wallet
 
-<CardGroup cols={2}>
-  <Card title="Browser wallets" icon="wallet">
-    MetaMask and other injected EVM wallets (Rabby, Coinbase Wallet, etc.) are the primary way to connect.
-  </Card>
-  <Card title="Email & social login" icon="envelope">
-    Sign in with email or a social account via Privy. A wallet is created for you, no extension required.
-  </Card>
-</CardGroup>
+Your wallet needs Arc added as a network. The app prompts you to add it automatically when you connect; to add it manually, use:
 
-## Network details
-
-Your wallet needs Robinhood Chain added as a network. The app will prompt you to add it automatically when you connect; to add it manually, use:
-
-| Setting | Value |
+| Field | Value |
 | --- | --- |
-| Network name | Robinhood Chain |
-| Chain ID | `4663` |
-| RPC URL | `https://rpc.mainnet.chain.robinhood.com` |
-| Currency symbol | ETH (18 decimals) |
-| Block explorer | `https://robinhoodchain.blockscout.com` |
+| Network name | Arc |
+| RPC URL | `https://rpc.mainnet.arc.io` |
+| Chain ID | `5042` |
+| Currency symbol | USDC |
+| Block explorer | `https://explorer.arc.io` |
 
-<Info>
-  Gas on Robinhood Chain is paid in **ETH**. You'll need ETH bridged to Robinhood Chain to trade, so keep a little extra beyond your trade size to cover gas.
-</Info>
+<Note>
+  Gas on Arc is paid in **USDC**, and so is every trade. There is no separate gas token to hold: the same USDC balance pays for the transaction (about $0.01) and for the coin you're buying. Bridge USDC to Arc from any chain Circle's CCTP supports, or withdraw USDC to the Arc network from an exchange that lists it.
+</Note>
 
-## Signing in
+## Connect
 
 <Steps>
-  <Step title="Click Connect">
-    Open [veto.fun](https://veto.fun) and click **Connect Wallet**.
+  <Step title="Open veto.fun">
+    Click **Login** in the top-right corner.
   </Step>
-  <Step title="Approve the connection">
-    Choose your wallet and approve the connection request. If prompted, approve adding/switching to Robinhood Chain.
+  <Step title="Choose your wallet">
+    Choose your wallet and approve the connection request. If prompted, approve adding/switching to Arc.
   </Step>
-  <Step title="Sign the sign-in message">
-    The app asks for one **free, gasless signature** (EIP-191) to verify you own the wallet. This unlocks profile features like favorites and comments. It is not a transaction and cannot move funds.
+  <Step title="Sign in">
+    Sign the login message. It's a plain signature (no transaction, no gas) that proves you control the wallet. veto.fun never asks for your seed phrase and never requests token approvals at login.
   </Step>
 </Steps>
 
-## Non-custodial, always
+You're in. Your USDC balance shows in the navbar; click it for tips on getting USDC onto Arc.
 
-Connecting never gives veto.fun control of your funds. Every trade, launch, and claim is a transaction you sign yourself, executed by open smart contracts.
+## Security
 
-<Warning>
-  Never share your seed phrase or private keys. The veto.fun team will never DM you first, never ask for your keys, and never ask you to "validate" your wallet on another site.
-</Warning>
+- We never ask for private keys or seed phrases. Anyone who does is not us.
+- Login is a signature over a human-readable message, not a transaction.
+- Trading a token requires a one-time token approval for our swap router. Check the address against the [contract list](/developers/overview#contract-addresses) if in doubt.
+- Bookmark [veto.fun](https://veto.fun) and check the URL before signing anything.

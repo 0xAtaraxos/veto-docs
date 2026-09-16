@@ -14,7 +14,7 @@ Every launched token is a minimal ERC-20 (plus EIP-2612 permit) with the entire 
 - **No mint.** Supply is minted once (1B) and can never increase.
 - **No pause, no blacklist, no transfer fees.** Transfers always work, for everyone, at face value.
 - **Immutable metadata.** The metadata URI is set at launch and can never change.
-- **Frozen venue.** The token's DEX ([SushiSwap or Uniswap](/protocol/venues)) is recorded at creation and never changes.
+- **Frozen venue.** The token's pool on [Uniswap v3](/protocol/venues) is recorded at creation and never changes.
 
 ## Locked liquidity, from block one
 
@@ -42,7 +42,7 @@ Fee claims are permission-gated to their own beneficiaries: creator fees can be 
 
 ## Price and solvency invariants
 
-- **The opening price is a permanent floor.** No liquidity exists above the opening tick, so sells alone can never push a price above the launch price, and the pool always holds exactly the ETH buyers put in.
+- **The opening price is a permanent floor.** No liquidity exists above the opening tick, so sells alone can never push a price above the launch price, and the pool always holds exactly the USDC buyers put in.
 - v3 rounding always favors the pool.
 - The swap router the app uses (MakiSwapRouter) is stateless, ownerless, and immutable; it holds no funds between transactions and only swaps against pools re-derived from a known factory. Your slippage limit is enforced on-chain.
 - These invariants are covered by unit tests and fork tests that assert live fills match the SDK's quotes to the wei, on both venues.

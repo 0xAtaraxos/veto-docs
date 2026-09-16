@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
   "name": "Veto",
-  "description": "Veto (veto.fun) is the memecoin launchpad on Robinhood Chain. Launch a token in one transaction, straight into a live SushiSwap or Uniswap pool with liquidity locked forever.",
+  "description": "Veto (veto.fun) is the memecoin launchpad on Arc. Launch a token in one transaction, straight into a live Uniswap v3 pool with liquidity locked forever, and earn USDC on every trade.",
   "colors": {
     "primary": "#4A90FF",
     "light": "#7AB0FF",
@@ -75,6 +75,7 @@
             "pages": [
               "developers/overview",
               "developers/sdk",
+              "developers/launch-integration",
               "developers/contracts"
             ]
           },

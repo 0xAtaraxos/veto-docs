@@ -1,97 +1,116 @@
 ---
 title: "Developer overview"
-description: "Build on veto.fun: chain details, contract architecture, addresses, and integration paths."
+description: "Build on veto.fun: Arc chain details, contract architecture, addresses, and integration paths."
 icon: "code"
 ---
 
-Everything on veto.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, or entire alternative frontends. No API key required.
+Everything on veto.fun is on-chain and permissionlessly integrable. You can build trading bots, indexers, dashboards, launch buttons in your own product, or entire alternative frontends. No API key required.
 
-## Two ways to integrate
+## Three ways to integrate
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="TypeScript SDK" icon="js" href="/developers/sdk">
-    `@maki-studio/sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
+    `@vetodotfun/sdk`: typed reads, writes, exact client-side quote math, and event streaming on top of viem. The fastest way to build.
+  </Card>
+  <Card title="Token creation flow" icon="rocket" href="/developers/launch-integration">
+    Add a Veto launch to your own app or bot, route the creator fee stream to any wallet, and track who is paid.
   </Card>
   <Card title="Raw contracts" icon="file-contract" href="/developers/contracts">
     Call the launchpad directly from Solidity, Foundry scripts, or any web3 library. Full function and error reference.
   </Card>
 </CardGroup>
 
-## Robinhood Chain
+## Arc
 
 | | Mainnet | Testnet |
 | --- | --- | --- |
-| Chain ID | `4663` | `46630` |
-| RPC | `https://rpc.mainnet.chain.robinhood.com` | `https://rpc.testnet.chain.robinhood.com` |
-| Explorer | [robinhoodchain.blockscout.com](https://robinhoodchain.blockscout.com) | [robinhoodchain-testnet.blockscout.com](https://robinhoodchain-testnet.blockscout.com) |
-| Gas token | ETH (18 decimals) | Testnet ETH ([faucet](https://faucet.testnet.chain.robinhood.com)) |
+| Chain ID | `5042` | `5042002` |
+| RPC | `https://rpc.mainnet.arc.io` | `https://rpc.testnet.arc.io` (also `wss://`) |
+| Explorer | [explorer.arc.io](https://explorer.arc.io) | [explorer.testnet.arc.io](https://explorer.testnet.arc.io) |
+| Gas token | USDC | Testnet USDC ([faucet](https://faucet.circle.com)) |
+| Blocks / finality | ~500 ms, final on inclusion | same |
 
-Robinhood Chain is an **Arbitrum Orbit L2**. Two practical consequences:
+Arc is Circle's EVM Layer 1 (Osaka baseline). Four practical consequences:
 
-- Blocks are fast and reorgs are effectively nonexistent, so confirmation counts of 0-1 are fine.
-- The public RPC is **HTTP only** (no `eth_subscribe` websocket). The SDK's event layer is built around chunked `eth_getLogs` polling for exactly this reason; for websockets you need a paid RPC provider.
+- **USDC is the gas token and has two decimal views.** At the native level (`msg.value`, `eth_getBalance`, every amount the SDK takes or returns) it has **18 decimals**, like wei. The same balance is exposed as an ERC-20 at `0x3600000000000000000000000000000000000000` with **6 decimals**. Never mix the two representations; the factor is 10¹².
+- **There is no WETH.** Pools quote directly in the USDC ERC-20; the launchpad never wraps anything.
+- **Finality is deterministic.** A transaction in a committed block is final. Don't count confirmations; do order events by `(blockNumber, logIndex)`, since sub-second blocks can share a timestamp.
+- **The public RPC is HTTP-only and capped.** No `eth_subscribe`; `eth_getLogs` rejects spans above about 2000 blocks. The SDK's event layer polls in chunks for exactly this reason. Use a paid RPC (Alchemy, QuickNode, dRPC) for anything serious.
+
+Value transfers to `address(0)` revert on Arc, `PREVRANDAO` is always 0, and blob transactions are not supported. Full list in Arc's [EVM differences](https://docs.arc.io/arc/references/evm-differences).
 
 ## Architecture
 
-There is no intermediate trading phase and no migration step. [`createToken`](/protocol/direct-listing) lists a token directly on **SushiSwap V3 or Uniswap v3** (the creator picks the [venue](/protocol/venues) per launch) in one transaction:
+There is no intermediate trading phase and no migration step. [`createToken`](/protocol/direct-listing) lists a token directly on **Uniswap v3** in one transaction:
 
-1. deploys the ERC-20 (a CREATE2 salt is mined so the token always sorts above WETH),
-2. creates and initializes the WETH/token 1% pool at the global opening price (tick 203200),
-3. mints the **entire 1B supply** as one single-sided position spanning `[TICK_LOWER, startTick]` into that venue's fee locker, forever,
+1. deploys the ERC-20 (a CREATE2 salt is mined so the token always sorts above USDC),
+2. creates and initializes the USDC/token 1% pool at the global opening price,
+3. mints the **entire 1B supply** as one single-sided position spanning `[TICK_LOWER, startTick]` into the fee locker, forever,
 4. optionally executes the creator's dev buy before anyone else can reach the pool.
 
-The venue is frozen into the token; a token lives on exactly one DEX. And because no liquidity was ever minted above `startTick`, the opening price is a permanent floor: sells can never push the price above it.
+Because no liquidity was ever minted above `startTick`, the opening price is a permanent floor: sells can never push the price above it.
 
 ```mermaid
 flowchart LR
-    Creator -- "createToken(venue)" --> LP[MakiDotFun]
-    LP -- deploys --> T["MakiToken (ERC-20 + permit)"]
-    LP -- "pool + locked 1B position" --> POOL["SushiSwap V3 or Uniswap v3 pool (1% tier)"]
-    LP -- "position NFT" --> FL["MakiFeeLocker (one per venue)"]
-    Trader -- "buy / sell, native ETH" --> R[MakiSwapRouter] --> POOL
-    FL -- "collectFees(): 30/70 split" --> Creator2[Creator] & Treasury
+    Creator -- "createToken()" --> LP[Launchpad]
+    LP -- deploys --> T["Token (ERC-20 + permit)"]
+    LP -- "pool + locked 1B position" --> POOL["Uniswap v3 pool (USDC/token, 1%)"]
+    LP -- "position NFT" --> FL[FeeLocker]
+    Trader -- "buy / sell, native USDC" --> R[SwapRouter] --> POOL
+    FL -- "collectFees(): split" --> Recipient["Fee recipient (creator or chosen wallet)"] & Treasury
 ```
 
 | Contract | Role |
 | --- | --- |
-| **MakiDotFun** | Singleton launchpad and registry for both venues: token factory, pool creation, position locking, fee config, creation-fee ledger. |
-| **MakiToken** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
-| **MakiFeeLocker** | One per venue, byte-identical. Immutable, ownerless vault holding every launch's LP position forever; splits harvested swap fees creator/treasury at the token's launch-time snapshot (30/70 under the current config). |
-| **MakiSwapRouter** | Stateless, ownerless, immutable ETH-in/ETH-out swapper working identically against pools on either venue. |
+| **Launchpad** | Singleton launchpad and registry: token factory, pool creation, position locking, fee config, fee-recipient registry, creation-fee ledger. |
+| **Token** | Per-launch ERC-20 (+ EIP-2612). Fixed 1B supply, no admin functions, immutable `metadataURI`. |
+| **FeeLocker** | Immutable, ownerless vault holding every launch's LP position forever; splits harvested swap fees recipient/treasury at the token's launch-time snapshot. |
+| **SwapRouter** | Stateless, ownerless, immutable USDC-in/USDC-out swapper against launch pools, live the instant a pool exists. |
 
-Only the launchpad and swap router addresses are needed to integrate. The lockers, treasury, WETH, position managers, and factories are all discoverable from the launchpad on-chain.
-
-## Why MakiSwapRouter
-
-Uniswap v3 has a SwapRouter02 on this chain; Sushi does not. Sushi routes through RedSnwapper, whose calldata is an opaque route produced by Sushi's off-chain routing API, and a pool seconds old is not indexed yet, which is exactly when a launchpad needs trading to work. So MakiSwapRouter talks to the pool directly with its own swap callback: identical on both venues, live the instant the pool exists, no API and no route encoding. It takes and returns native ETH, and it only ever swaps against a pool it re-derived from a known factory.
+Only the launchpad and swap router addresses are needed to integrate. The locker, treasury, position manager and factory are all discoverable from the launchpad on-chain.
 
 ## Contract addresses
 
-Live on mainnet since block 29,588,143 (2026-08-06), source-verified on Blockscout:
+<Warning>
+  The Arc deployment is in progress. Addresses will appear here and in `@vetodotfun/sdk`'s `deployments.arc` the moment they are live and source-verified; until then the SDK's built-in network entries are guarded placeholders that throw a descriptive error.
+</Warning>
 
-| Contract | Mainnet (4663) |
+| Contract | Arc mainnet (5042) |
 | --- | --- |
-| MakiDotFun | [`0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e`](https://robinhoodchain.blockscout.com/address/0x6e4Feb8C6D71F3E29230411ba1097802dDC40C1e) |
-| MakiFeeLocker (Sushi) | [`0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f`](https://robinhoodchain.blockscout.com/address/0xdb551DCC67DeCD8466Fd0168beFf58fEa95D9c8f) |
-| MakiFeeLocker (Uniswap) | [`0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86`](https://robinhoodchain.blockscout.com/address/0x2cEf9adA6fEB71CC8097464bFc50db1Eade13C86) |
-| MakiSwapRouter | [`0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d`](https://robinhoodchain.blockscout.com/address/0xdF217d53c4217bE86f2ec4156f89006E4ECfa52d) |
-| Treasury / owner | [`0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096`](https://robinhoodchain.blockscout.com/address/0x4f8a44D1831352dFfa4E3cb9FdB668F90C75d096) |
+| Launchpad | pending |
+| FeeLocker | pending |
+| SwapRouter | pending |
+| Treasury / owner | pending |
+
+Canonical Uniswap v3 on Arc, which the launchpad builds on: factory `0xf0db7b58379503491d857db50ac9ece64c653918`, position manager `0x39654a85a4c05127f5fd6ed22caec077a0fb1377`.
 
 <Note>
-  There is no testnet deployment: neither DEX exists on Robinhood Chain testnet. Develop against a local Anvil fork of mainnet instead (`anvil --fork-url https://rpc.mainnet.chain.robinhood.com`).
+  Uniswap v3 is not deployed on Arc testnet, so neither are the Veto contracts. Develop against an `arc-anvil` fork of mainnet ([Arc Foundry](https://docs.arc.io/arc/references/evm-differences)) and pass the fork's deployment object to the SDK.
 </Note>
 
 ## Key protocol constants
 
 ```text
 TOTAL_SUPPLY       = 1_000_000_000 × 1e18   // per token, all of it in the locked position
-POOL_FEE           = 10000                  // 1% tier, both venues
+POOL_FEE           = 10000                  // 1% tier
 TICK_SPACING       = 200
 TICK_LOWER         = -887200                // bottom of the locked position
-startTick          = 203200                 // opening price: ≈667.46M tokens/ETH, ≈1.4982 ETH FDV
-Creation fee       = 0.001 ETH flat         // current global config
-Creator LP share   = 3000 bps (30%)         // current global config; rest to treasury
-Venue.UNISWAP = 0, Venue.SUSHI = 1
+startTick          = read launchGeometry()  // opening price: a fixed USD FDV, identical for every launch
+Creation fee       = read feeConfig()       // flat, in USDC
+Creator LP share   = 5000 bps (50%)         // current global config; rest to treasury
+Venue.UNISWAP = 0
 ```
 
-There is **no per-trade launchpad fee**. Protocol and creator revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the venue's FeeLocker and split at the token's snapshotted `creatorLpShareBps`. The global config (`creatorLpShareBps`, `creationFee`) is owner-tunable for future launches only: each token snapshots it at `createToken` and its split never changes. See [fees](/protocol/fees) and [security](/protocol/security).
+There is **no per-trade launchpad fee**. Protocol and creator revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the FeeLocker and split at the token's snapshotted `creatorLpShareBps`. The global config (`creatorLpShareBps`, `creationFee`) is owner-tunable for future launches only: each token snapshots it at `createToken` and its split never changes. See [fees](/protocol/fees) and [security](/protocol/security).
+
+## Public API
+
+veto.fun's own backend exposes a few read-only endpoints that are handy for integrators (no key, CORS open):
+
+| Endpoint | Returns |
+| --- | --- |
+| `GET https://api.veto.fun/api/launchpad/config` | Contract addresses, venue, launch geometry, current fee config |
+| `GET https://api.veto.fun/api/launchpad/pool/:token` | Pool address, venue, creator, creation block |
+| `GET https://api.veto.fun/api/launchpad/recipient/:token` | `{ creator, feeRecipient, creatorLpShareBps }` — who the creator fee stream pays |
+
+Market data (candles, trades, holders) is not served by us: read it from the pool directly, or from GeckoTerminal (network `arc`) / DexScreener (chain `arc`), which index every launch pool from its first swap.

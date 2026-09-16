@@ -8,19 +8,19 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="What is veto.fun?">
-    A meme coin launchpad on **Robinhood Chain** (an Arbitrum Orbit L2 that uses ETH for gas). Anyone can launch a token for a flat 0.001 ETH, and every launch lists **directly on SushiSwap or Uniswap** with its entire supply locked as liquidity forever. No bonding curve, no graduation: the token is live on a real DEX from its first block.
+    A meme coin launchpad on **Arc** (Circle's Layer 1, where USDC is the gas token). Anyone can launch a token for a flat USDC fee, and every launch lists **directly on Uniswap v3** with its entire supply locked as liquidity forever. No bonding curve, no graduation: the token is live on a real DEX from its first block.
   </Accordion>
   <Accordion title="What chain is it on, and what do I pay gas in?">
-    Robinhood Chain, chain ID **4663**. Gas is paid in **ETH**. It's an EVM chain, so standard Ethereum wallets like MetaMask work. See [Connect a Wallet](/guides/connect-wallet).
+    Arc, chain ID **5042**. Gas is paid in **USDC**, and so is everything else: every price, fee and reward on veto.fun is a dollar amount. It's an EVM chain, so standard Ethereum wallets like MetaMask work. See [Connect a Wallet](/guides/connect-wallet).
   </Accordion>
   <Accordion title="Is veto.fun custodial?">
     No. You trade directly from your own wallet against on-chain smart contracts. The platform never holds your funds, and the contracts have no pause, mint, blacklist, or withdrawal backdoors. See [Security](/protocol/security).
   </Accordion>
   <Accordion title="How much does it cost to launch a token?">
-    A flat **0.001 ETH** creation fee plus network gas (a fraction of a cent on Robinhood Chain). You provide no liquidity yourself: the locked supply is the liquidity. You can optionally attach more ETH to make the first buy in your own pool.
+    A flat **USDC** creation fee (shown on the create page) plus network gas (about $0.01 on Arc). You provide no liquidity yourself: the locked supply is the liquidity. You can optionally attach more ETH to make the first buy in your own pool.
   </Accordion>
-  <Accordion title="SushiSwap or Uniswap: which one, and why?">
-    Your choice at launch. **SushiSwap is the default**, and it's the venue we work closely with on Robinhood Chain; **Uniswap v3** is right there as an option if you prefer it. Both open your pool at the identical price with identical economics, and the choice is permanent. See [Venues](/protocol/venues).
+  <Accordion title="Why Uniswap v3?">
+    Because it's the canonical DEX on Arc and the one every wallet, aggregator and chart site already watches. Your pool is an ordinary Uniswap v3 USDC/token pool on the 1% tier, created and seeded in the same transaction that deploys your token, so it is tradeable everywhere from block one. There is nothing to migrate later; the pool is the token's home for life.
   </Accordion>
 </AccordionGroup>
 
@@ -31,7 +31,7 @@ icon: "circle-question"
     The launchpad adds **no fee on trades**. You pay the pool's standard **1% swap fee** (the same on both venues) plus gas. That fee accrues to the token's locked liquidity and is split 30/70 between the creator and the protocol. Details in [Fees](/protocol/fees).
   </Accordion>
   <Accordion title="Can I trade Veto tokens outside of veto.fun?">
-    Yes, immediately. Every token is an ordinary SushiSwap or Uniswap v3 pool, so any wallet, aggregator, bot, or charting platform that supports those DEXes on Robinhood Chain can see and trade it from the first swap.
+    Yes, immediately. Every token is an ordinary Uniswap v3 pool, so any wallet, aggregator, bot, or charting platform that supports those DEXes on Arc can see and trade it from the first swap.
   </Accordion>
   <Accordion title="How does the price move?">
     Like any DEX pool: buys push it up, sells push it down, along exact v3 math. One special property: **no liquidity exists above the opening price**, so sells alone can never push a token above its launch price. The quote you see is computed with the same math the chain executes.
@@ -45,7 +45,7 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="How do creators earn?">
-    **30% of the pool's 1% swap fees**, from the token's first trade, forever, claimable on-chain at any time. See [Creator Rewards](/guides/creator-rewards).
+    **50% of the pool's 1% swap fees**, paid in USDC, from the token's first trade, forever, claimable on-chain at any time. See [Creator Rewards](/guides/creator-rewards).
   </Accordion>
   <Accordion title="Do creators get free tokens?">
     No. The creator's only way to own their token is to buy it at the public price, including the optional "dev buy" at launch, which executes at the same opening price available to everyone.
@@ -62,6 +62,6 @@ icon: "circle-question"
     Join our [Discord](https://discord.gg/vetodotfun). Remember: the team never DMs first and never asks for your seed phrase.
   </Accordion>
   <Accordion title="Is there an API or SDK?">
-    Yes. Everything is on-chain and open. Install the TypeScript SDK with `npm install @maki-studio/sdk viem`, or call the contracts directly — see the [Developer docs](/developers/overview) for the SDK guide and full contract reference.
+    Yes. Everything is on-chain and open. Install the TypeScript SDK with `npm install @vetodotfun/sdk viem`, or call the contracts directly — see the [Developer docs](/developers/overview) for the SDK guide and full contract reference.
   </Accordion>
 </AccordionGroup>
