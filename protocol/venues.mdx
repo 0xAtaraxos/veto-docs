@@ -1,0 +1,39 @@
+---
+title: "Venue: Uniswap v3"
+description: "Every veto.fun token lives in a real Uniswap v3 pool on Arc from block one, quoted in USDC and visible to every major trading platform."
+icon: "arrows-split-up-and-left"
+---
+
+A veto.fun token doesn't trade on veto.fun. It trades on **Uniswap v3 on Arc**, in a **USDC/token pool on the 0.3% or 1% fee tier** (the creator's choice at launch), from its very first block.
+
+<Info>
+  The venue is **frozen into the token at creation**. A token lives in its pool for its whole life; there is no migration and nothing to move.
+</Info>
+
+## Why this matters: your token is visible everywhere
+
+Because every token is an ordinary v3 pool on the canonical Uniswap deployment, the entire trading ecosystem can see it without anyone lifting a finger:
+
+- **Charting and discovery platforms** (GeckoTerminal, DexScreener and friends) index the pool from its first swap.
+- **Aggregators and wallets** that integrate Uniswap on Arc can route to it.
+- **Trading bots** interact with it like any other v3 pool, because it is one.
+
+There is no "on the launchpad" phase where only we can see your token. It is born public, on infrastructure every major platform already watches.
+
+## Quoted in USDC
+
+Arc's gas token is USDC, and so is the quote side of every Veto pool. Prices, market caps, volumes and fees are dollar amounts by construction: no ETH price to convert through, no volatility in the denominator. The opening price is the same fixed USD FDV for every launch.
+
+## How trading works from second zero
+
+Freshly created pools have one practical problem: DEX routing APIs haven't indexed them yet. So the Veto app trades through its own **swap router**, a minimal, immutable contract that swaps USDC against the pool directly:
+
+- **USDC in, tokens out** (buy) and **tokens in, USDC out** (sell), with slippage and deadline protection.
+- It only ever swaps against a pool it re-derives from the Uniswap factory, so it cannot be pointed at a fake pool.
+- It is stateless and ownerless: it holds nothing between transactions and nobody can change it.
+
+You are never required to use it. The Uniswap app, any aggregator or your own bot works on the same pool.
+
+## Fee tier
+
+Launch pools use the **0.3% tier** (tick spacing 60) or the **1% tier** (tick spacing 200), picked by the creator and fixed for life. The fee doesn't go to the DEX or to us off the top: it accrues to the locked position and is split creator/protocol as described in [fees](/protocol/fees).

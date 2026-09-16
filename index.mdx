@@ -1,22 +1,25 @@
 ---
 title: "Welcome to veto.fun"
 sidebarTitle: "Welcome"
-description: "veto.fun is the memecoin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever."
+description: "veto.fun is the memecoin launchpad on Arc. Launch a token in one transaction, straight into a live Uniswap v3 pool with liquidity locked forever, and earn USDC on every trade."
 icon: "star"
 ---
+
+{/* Drop a Veto banner loop at /videos/banner.mp4 and uncomment:
 
 <video
   autoPlay
   muted
   loop
   playsInline
-  src="/videos/banner-3.mp4"
+  src="/videos/banner.mp4"
   style={{ width: '100%', display: 'block' }}
 />
+*/}
 
-**veto.fun** is the memecoin launchpad on **Robinhood Chain**. Launch in one transaction, trade on one fair curve, and graduate into liquidity that's locked forever. **You hold the veto. The market decides the rest.**
+**veto.fun** is the memecoin launchpad on **Arc**, Circle's USDC-native chain. One transaction launches your token **straight into a live Uniswap v3 pool** with the entire supply locked as liquidity forever. No bonding curve, no graduation, no waiting: it's a real DEX token from block one, priced in USDC and visible to every major trading platform that watches Uniswap. **You hold the keys. The market decides the rest.**
 
-This section is the non-technical tour. Building on veto.fun? Head to the [Developer docs](/developers/overview) for the TypeScript SDK (`@vetostudio/veto-sdk`) and the full contract reference.
+This section is the non-technical tour. Building on veto.fun? Head to the [Developer docs](/developers/overview) for the TypeScript SDK (`@vetodotfun/sdk`), the token-creation integration guide and the full contract reference.
 
 <CardGroup cols={2}>
   <Card title="Why did we build this?" icon="hammer" href="/introduction/why">
@@ -24,22 +27,19 @@ This section is the non-technical tour. Building on veto.fun? Head to the [Devel
   </Card>
 
   <Card title="How it works" icon="diagram-project" href="/introduction/how-it-works">
-    Launch, curve, graduation, locked forever. One page, one minute.
+    One transaction: token, pool, locked liquidity. One page, one minute.
   </Card>
 
   <Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
-    0.001 ETH, one transaction, no gatekeeping.
+    One flat USDC fee, one transaction, no gatekeeping.
   </Card>
 
-  <Card title="$VETO" icon="star" href="/introduction/veto-token">
-    The official token. 50% of every fee buys it back.
-  </Card>
 </CardGroup>
 
 {/* Drop a capture at /images/app-preview.png (dark theme, token page with a
     live chart, ~2400×1350) and uncomment:
 
-<Frame caption="A live token page: bonding curve chart, trades, and the road to graduation.">
+<Frame caption="A live token page: chart, trades, and the trade widget.">
   <img src="/images/app-preview.png" alt="The veto.fun app showing a token page with live chart and trades" />
 </Frame>
 */}
@@ -49,16 +49,16 @@ This section is the non-technical tour. Building on veto.fun? Head to the [Devel
 Three things make this launchpad worth your time, and none of them are policy. They're properties of the contracts:
 
 <CardGroup cols={3}>
-  <Card title="One curve for everyone" icon="scale-balanced" href="/protocol/bonding-curve">
-    Creators buy at the same price as you. No presales, no team bags. The contract has no way to do it.
+  <Card title="Every launch opens equal" icon="scale-balanced" href="/protocol/direct-listing">
+    Same opening price for every token, and creators buy at it like everyone else. No presales, no team bags. The contract has no way to do it.
   </Card>
 
-  <Card title="Liquidity locked forever" icon="lock" href="/protocol/graduation">
-    Graduated liquidity is minted into a vault with no withdrawal function. Nobody can pull it. Not even us.
+  <Card title="Liquidity locked forever" icon="lock" href="/protocol/venues">
+    The entire supply is minted into a vault with no withdrawal function, in the launch transaction itself. Nobody can pull it. Not even us.
   </Card>
 
   <Card title="Creators keep earning" icon="coins" href="/guides/creator-rewards">
-    0.3% of every curve trade and 30% of Uniswap fees after graduation, for as long as the coin trades.
+    50% of the pool's swap fees, paid in USDC, from the first trade, for as long as the coin trades.
   </Card>
 </CardGroup>
 
@@ -68,11 +68,11 @@ Tldr: *everyone*. But here's the breakdown.
 
 <CardGroup cols={3}>
   <Card title="Creators" icon="wand-magic-sparkles" href="/guides/launch-a-token">
-    Launch for 0.001 ETH and earn a cut of every trade your token ever makes.
+    Launch for a flat USDC fee and earn half of every trade's fees, on any platform, forever.
   </Card>
 
   <Card title="Traders" icon="chart-line-up" href="/guides/trading">
-    Find tokens early, trade on transparent on-chain pricing, watch it all on live charts.
+    Find tokens at their opening price, trade real DEX pools, watch it all on live charts.
   </Card>
 </CardGroup>
 

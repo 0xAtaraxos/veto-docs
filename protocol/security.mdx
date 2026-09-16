@@ -14,41 +14,42 @@ Every launched token is a minimal ERC-20 (plus EIP-2612 permit) with the entire 
 - **No mint.** Supply is minted once (1B) and can never increase.
 - **No pause, no blacklist, no transfer fees.** Transfers always work, for everyone, at face value.
 - **Immutable metadata.** The metadata URI is set at launch and can never change.
+- **Frozen venue.** The token's pool on [Uniswap v3](/protocol/venues) is recorded at creation and never changes.
+
+## Locked liquidity, from block one
+
+There is no waiting period and no graduation event: the same transaction that creates a token mints its **entire 1B supply as one liquidity position** and sends it into the venue's **FeeLocker** vault. The vault is:
+
+- **Immutable.** No upgrade path.
+- **Ownerless in effect.** No function exists that can move the position out, for anyone.
+- **Withdrawal-free.** Only swap *fees* can be collected (by the token's fee recipient, the treasury, or the platform's claimer service), split creator/treasury at the ratio snapshotted into the token at launch: 30/70 under the current config, unchangeable per token afterwards.
+
+Locked means locked: the liquidity is provably unreachable by anyone, forever. There is one locker per venue, byte-identical, and both read their fee configuration from the launchpad.
 
 ## The launchpad contract
 
-The launchpad holds curve funds and enforces the lifecycle. Its owner (the protocol) has exactly **four** powers:
+The launchpad creates tokens and keeps the registry. Its owner (the protocol) has exactly **three** powers:
 
 | Power | Bound |
 | --- | --- |
-| Tune the global fee config | Hard caps in the contract (≤5% trade fee, ≤0.1 ETH creation fee); affects **future launches only**, since every existing token keeps the fee snapshot taken at its creation, forever |
+| Tune the creation fee and default fee split | Affects **future launches only**; every existing token keeps the snapshot taken at its creation, forever |
 | Rotate the claim-authority wallet | Can only *trigger* payouts; funds always flow to the recorded recipients |
-| Change the treasury address | Only affects where protocol fees go |
-| Set the FeeLocker address | One-time, at deployment (already done) |
+| Change the treasury address | Only affects where the protocol's fee share goes |
 
-That's the complete list. **No token's fees can ever be changed after launch.** The snapshot model means fee changes cannot be applied retroactively, by anyone. There is **no** function to withdraw curve ETH, pause trading, seize tokens, block graduation, or upgrade the contract logic.
+That's the complete list. There is **no** function to touch a pool, withdraw a locked position, pause trading, seize tokens, or upgrade the contract logic. No proxies anywhere: the deployed bytecode is final.
 
 Fee claims are permission-gated to their own beneficiaries: creator fees can be paid out only by the fee recipient or the platform's claimer service (which distributes to recipients in batches), and protocol fees only by the treasury. No gate lets anyone redirect funds; payouts always go to the recorded recipient.
 
-## Locked liquidity
+## Price and solvency invariants
 
-At graduation, the Uniswap v3 LP position is minted directly into the **FeeLocker**, a vault that is:
-
-- **Immutable.** No upgrade path.
-- **Ownerless.** No admin functions.
-- **Withdrawal-free.** The code contains no function that can move the LP position out. Only swap *fees* can be collected (by the token's fee recipient, the treasury, or the platform's claimer service), and those are split creator/treasury at the ratio snapshotted into the token at launch: 30/70 for tokens launched under the current config, unchangeable per token afterwards.
-
-Locked means locked: the liquidity is provably unreachable by anyone, forever.
-
-## Solvency invariants
-
-- The curve's rounding always favors the pool: the constant product `k` can never decrease.
-- The contract always holds enough real ETH to buy back every token sold on the curve (`realEth = virtualEth − virtualEth₀`).
-- These invariants are covered by fuzz tests and fork tests against the live Uniswap deployment.
+- **The opening price is a permanent floor.** No liquidity exists above the opening tick, so sells alone can never push a price above the launch price, and the pool always holds exactly the USDC buyers put in.
+- v3 rounding always favors the pool.
+- The swap router the app uses (VetoSwapRouter) is stateless, ownerless, and immutable; it holds no funds between transactions and only swaps against pools re-derived from a known factory. Your slippage limit is enforced on-chain.
+- These invariants are covered by unit tests and fork tests that assert live fills match the SDK's quotes to the wei, on both venues.
 
 ## Audit status
 
-The contracts have undergone internal security review (including a fixed high-severity finding around pool-initialization griefing at migration, now mitigated with a bounded corrective swap). An independent third-party audit is planned; this page will link the report when published.
+The contracts have undergone internal security review. An independent third-party audit is planned; this page will link the report when published.
 
 <Warning>
   Smart contract risk can never be zero, and locked liquidity does not protect you from a token's price going to zero. A creator can still buy early and sell on holders. Those trades are public on-chain, so check the creator's activity before buying. See the [Risk Disclosure](/legal/risk-disclosure).

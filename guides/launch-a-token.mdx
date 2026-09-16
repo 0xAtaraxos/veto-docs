@@ -1,20 +1,22 @@
 ---
 title: "Launch a Token"
-description: "Create your own meme coin on veto.fun in one transaction, for a flat 0.001 ETH."
+description: "Create your own meme coin on veto.fun in one transaction, for a flat USDC fee, straight into a live Uniswap v3 pool."
 icon: "rocket"
 ---
 
-One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. That's the whole process. No forms, no approval queue, no gatekeeping.
+One transaction, a flat USDC fee plus gas, and your token is live in a real DEX pool with its liquidity locked forever. That's the whole process. No forms, no approval queue, no gatekeeping, and no second phase later.
+
+{/* Re-record the create flow in the Veto UI, drop at /videos/create.mp4 and uncomment:
 
 <Frame caption="The whole thing, start to live token. If it takes you more than a minute, your logo file was too big.">
   <video autoPlay muted loop playsInline src="/videos/create.mp4" />
 </Frame>
 
-<sub>\* filmed on a test network. The "Veto" token in the clip is a rehearsal prop, not a live token.</sub>
+<sub>\* filmed on a test network. The token in the clip is a rehearsal prop, not a live token.</sub> */}
 
 ## Before you start
 
-- A connected wallet with a little ETH on Robinhood Chain ([Connect a Wallet](/guides/connect-wallet))
+- A connected wallet with some USDC on Arc ([Connect a Wallet](/guides/connect-wallet))
 - A **name** and **ticker** for your token
 - A square **logo image** (PNG/JPG, ideally 256×256 or larger)
 - Optionally: a description and social links (X, Telegram, website)
@@ -28,14 +30,17 @@ One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. 
   <Step title="Fill in the basics">
     Enter the name and ticker, upload your logo, and add a description and socials. Your media and metadata are pinned to IPFS, and the resulting metadata URI is stored immutably on the token contract.
   </Step>
+  <Step title="Choose who earns the fees">
+    **Fees go to** defaults to you. Pick **Share** to route your creator fee stream to any other wallet instead: a team multisig, a friend, a community treasury. The recipient sees the token in their own studio and claims without you. It is always the whole creator share that moves, and the current recipient can redirect it again later.
+  </Step>
   <Step title="Optional: dev buy">
-    Attach ETH to make the very first buy on your own curve. This executes at the **same public starting price** anyone else would get; you receive no free or discounted tokens. A visible dev buy signals commitment, but a large one followed by a dump will be visible on-chain too.
+    Attach USDC to make the very first buy in your own pool, inside the launch transaction, before anyone else can trade. It executes at the **same public opening price** anyone else would get; you receive no free or discounted tokens. A visible dev buy signals commitment, but a large one followed by a dump will be visible on-chain too.
   </Step>
   <Step title="Review and launch">
-    Check everything carefully, because token details are **immutable after launch**. Confirm the transaction. Your token deploys, its bonding curve opens, and it's instantly live and tradable on the site.
+    Check everything carefully, because token details are **immutable after launch**. Confirm the transaction. Your token deploys, its pool opens at the fixed launch price, the entire supply locks as liquidity, and it's live and tradable everywhere at once.
   </Step>
   <Step title="Share it">
-    Every token gets its own page with a live chart, trades, and comments. Share the link and start building your community.
+    Every token gets its own page with a live chart, trades, and comments. And because the pool is on a major DEX, charting sites and aggregators pick it up on their own. Share the link and start building your community.
   </Step>
 </Steps>
 
@@ -45,17 +50,19 @@ One transaction, a flat 0.001 ETH plus gas, and your token is live and trading. 
 | --- | --- |
 | Token standard | ERC-20 with EIP-2612 permit (gasless approvals) |
 | Total supply | 1,000,000,000, minted once, fixed forever |
-| Sold on the bonding curve | 793,100,000 (79.31%) |
-| Reserved for Uniswap liquidity | 206,900,000 (20.69%) |
-| Creation fee | 0.001 ETH flat, plus gas |
+| Liquidity | The entire supply, locked forever as a single position |
+| Venue | Uniswap v3 on Arc, USDC/token pool |
+| Trading fee | 0.3% or 1%, your choice, fixed for life; half of it is yours |
+| Opening FDV | A fixed USD amount, the same for every launch (shown on the create page) |
+| Creation fee | Flat, in USDC, plus about $0.01 gas |
 | Creator allocation | 0 tokens |
 | Admin functions on the token | None. No owner, mint, pause, or blacklist |
 
 ## Immutable vs. yours to earn
 
-Once launched, **nothing about the token can be changed**, not by you and not by the platform: supply, name, ticker, metadata URI, curve parameters, and fee rates are all fixed.
+Once launched, **nothing about the token can be changed**, not by you and not by the platform: supply, name, ticker, metadata URI, venue, and fee terms are all fixed.
 
-What you get as the creator is a **fee stream**: 0.3% of every curve trade, and 30% of Uniswap swap fees after graduation, claimable anytime. See [Creator Rewards](/guides/creator-rewards).
+What you get as the creator is a **fee stream**: 50% of your pool's swap fees, paid in USDC, from the first trade, claimable anytime, and routable to any wallet you choose. See [Creator Rewards](/guides/creator-rewards).
 
 <Note>
   You can redirect where your creator fees are paid (for example, to a multisig) at any time, but only the current fee recipient can do that.

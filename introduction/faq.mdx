@@ -8,16 +8,19 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="What is veto.fun?">
-    A meme coin launchpad on **Robinhood Chain** (an Arbitrum Orbit L2 that uses ETH for gas). Anyone can launch a token for a flat 0.001 ETH, every token trades on the same fair bonding curve, and successful tokens graduate automatically into a Uniswap v3 pool with permanently locked liquidity.
+    A meme coin launchpad on **Arc** (Circle's Layer 1, where USDC is the gas token). Anyone can launch a token for a flat USDC fee, and every launch lists **directly on Uniswap v3** with its entire supply locked as liquidity forever. No bonding curve, no graduation: the token is live on a real DEX from its first block.
   </Accordion>
   <Accordion title="What chain is it on, and what do I pay gas in?">
-    Robinhood Chain, chain ID **4663**. Gas is paid in **ETH**. It's an EVM chain, so standard Ethereum wallets like MetaMask work. See [Connect a Wallet](/guides/connect-wallet).
+    Arc, chain ID **5042**. Gas is paid in **USDC**, and so is everything else: every price, fee and reward on veto.fun is a dollar amount. It's an EVM chain, so standard Ethereum wallets like MetaMask work. See [Connect a Wallet](/guides/connect-wallet).
   </Accordion>
   <Accordion title="Is veto.fun custodial?">
     No. You trade directly from your own wallet against on-chain smart contracts. The platform never holds your funds, and the contracts have no pause, mint, blacklist, or withdrawal backdoors. See [Security](/protocol/security).
   </Accordion>
   <Accordion title="How much does it cost to launch a token?">
-    A flat **0.001 ETH** creation fee plus network gas (a fraction of a cent on Robinhood Chain). You can optionally attach more ETH to your launch to make the first buy on your own curve.
+    A flat **USDC** creation fee (shown on the create page) plus network gas (about $0.01 on Arc). You provide no liquidity yourself: the locked supply is the liquidity. You can optionally attach more ETH to make the first buy in your own pool.
+  </Accordion>
+  <Accordion title="Why Uniswap v3?">
+    Because it's the canonical DEX on Arc and the one every wallet, aggregator and chart site already watches. Your pool is an ordinary Uniswap v3 USDC/token pool on the 1% tier, created and seeded in the same transaction that deploys your token, so it is tradeable everywhere from block one. There is nothing to migrate later; the pool is the token's home for life.
   </Accordion>
 </AccordionGroup>
 
@@ -25,16 +28,16 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="What fees do I pay when trading?">
-    A **1% fee** on every bonding-curve buy and sell, taken in ETH: 0.7% to the protocol and 0.3% to the token's creator. After a token graduates, trades happen on Uniswap v3 in a 1% fee-tier pool instead. Details in [Fees](/protocol/fees).
+    The launchpad adds **no fee on trades**. You pay the pool's standard **1% swap fee** (the same on both venues) plus gas. That fee accrues to the token's locked liquidity and is split 30/70 between the creator and the protocol. Details in [Fees](/protocol/fees).
+  </Accordion>
+  <Accordion title="Can I trade Veto tokens outside of veto.fun?">
+    Yes, immediately. Every token is an ordinary Uniswap v3 pool, so any wallet, aggregator, bot, or charting platform that supports those DEXes on Arc can see and trade it from the first swap.
   </Accordion>
   <Accordion title="How does the price move?">
-    Deterministically. The bonding curve is a constant-product formula over virtual reserves: buys raise the price, sells lower it, and the exact quote is computable on-chain before you trade. See [Bonding Curve](/protocol/bonding-curve).
-  </Accordion>
-  <Accordion title="What is graduation?">
-    When all 793.1 million curve tokens are sold, the curve closes forever and the raised ETH plus 206.9 million reserved tokens seed a Uniswap v3 pool at the final curve price. The LP is locked permanently. See [Graduation](/protocol/graduation).
+    Like any DEX pool: buys push it up, sells push it down, along exact v3 math. One special property: **no liquidity exists above the opening price**, so sells alone can never push a token above its launch price. The quote you see is computed with the same math the chain executes.
   </Accordion>
   <Accordion title="Can the developer rug the liquidity?">
-    Not through the contracts. Creators never receive free supply, the curve's ETH is held by the protocol until graduation, and graduated liquidity is locked in an ownerless vault with no withdrawal function. A creator *can* still buy early (visibly, on-chain) and sell later, so always check the creator's activity before aping.
+    Not through the contracts. Creators never receive free supply, and the entire supply sits as liquidity in a vault with no withdrawal function, from the block the token was created. A creator *can* still buy early (visibly, on-chain) and sell later, so always check the creator's activity before aping.
   </Accordion>
 </AccordionGroup>
 
@@ -42,21 +45,13 @@ icon: "circle-question"
 
 <AccordionGroup>
   <Accordion title="How do creators earn?">
-    Two streams, both claimable on-chain at any time: **0.3% of every bonding-curve trade** while the token is on the curve, and **30% of all Uniswap v3 swap fees** after graduation, forever. See [Creator Rewards](/guides/creator-rewards).
+    **50% of the pool's 1% swap fees**, paid in USDC, from the token's first trade, forever, claimable on-chain at any time. See [Creator Rewards](/guides/creator-rewards).
   </Accordion>
   <Accordion title="Do creators get free tokens?">
-    No. The creator's only way to own their token is to buy it on the curve at the public price, including the optional "dev buy" at launch, which executes at the same starting price available to everyone.
+    No. The creator's only way to own their token is to buy it at the public price, including the optional "dev buy" at launch, which executes at the same opening price available to everyone.
   </Accordion>
   <Accordion title="Can I change my token after launch?">
-    No. Name, ticker, supply, metadata URI, and curve parameters are immutable once launched.
-  </Accordion>
-</AccordionGroup>
-
-## Platform token
-
-<AccordionGroup>
-  <Accordion title="Does veto.fun have its own token?">
-    Yes: **\$VETO**. It launches directly on Uniswap v3 on Robinhood Chain, not through the launchpad. The official contract address is published on [the \$VETO page](/introduction/veto-token) and our official channels. Anything else is fake.
+    No. Name, ticker, supply, metadata URI, venue, and fee terms are immutable once launched.
   </Accordion>
 </AccordionGroup>
 
@@ -67,6 +62,6 @@ icon: "circle-question"
     Join our [Discord](https://discord.gg/vetodotfun). Remember: the team never DMs first and never asks for your seed phrase.
   </Accordion>
   <Accordion title="Is there an API or SDK?">
-    Yes. Everything is on-chain and open. Install the TypeScript SDK with `npm install @vetostudio/veto-sdk viem`, or call the contracts directly — see the [Developer docs](/developers/overview) for the SDK guide and full contract reference.
+    Yes. Everything is on-chain and open. Install the TypeScript SDK with `npm install @vetodotfun/sdk viem`, or call the contracts directly — see the [Developer docs](/developers/overview) for the SDK guide and full contract reference.
   </Accordion>
 </AccordionGroup>

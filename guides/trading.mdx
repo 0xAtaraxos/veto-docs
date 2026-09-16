@@ -1,57 +1,58 @@
 ---
 title: "Trading"
-description: "How buying and selling works on veto.fun, on the bonding curve and after graduation on Uniswap v3."
+description: "How buying and selling works on veto.fun: ordinary DEX swaps against the token's Uniswap v3 pool, in USDC, from the first block."
 icon: "chart-line-up"
 ---
 
 {/* Capture: a token page with chart + trade widget. Drop at /images/trading.png and uncomment:
-<Frame caption="A curve-phase token: live chart, trades, and the progress bar to graduation.">
+<Frame caption="A token page: live chart, trades, and the trade widget.">
   <img src="/images/trading.png" alt="A veto.fun token page with live chart and trading widget" />
 </Frame>
 */}
 
-Every token page has a trading widget with live pricing. Where your trade executes depends on the token's stage:
+Every veto.fun token has a live [Uniswap v3 pool](/protocol/venues) from the block it launched in, so every trade is an ordinary DEX swap. The token page gives you a widget with exact quotes; under the hood your trade goes straight against the pool, in USDC.
 
-- **On the curve:** your trade goes to the veto.fun bonding curve contract.
-- **Graduated:** the token trades on its Uniswap v3 pool.
-
-## Buying on the curve
+## Buying
 
 <Steps>
   <Step title="Enter an amount">
-    Type how much ETH to spend (or switch modes to specify an exact token amount to receive). The widget shows the exact quoted output, the 1% fee, and the price impact.
+    Type how much USDC to spend. The widget quotes the exact token output, the pool's fee (0.3% or 1%, set at launch), and the price impact, computed with the same math the chain uses.
   </Step>
   <Step title="Check slippage">
-    Your transaction includes a minimum-receive amount. If the curve moves past your slippage tolerance before your transaction lands, it reverts and your ETH stays in your wallet (minus gas). Default tolerance is 1%; adjust it in the widget settings.
+    Your transaction includes a minimum-receive amount. If the pool moves past your tolerance before your transaction lands, it reverts and your USDC stays in your wallet (minus gas). Default tolerance is 1%; adjust it in the widget settings.
   </Step>
   <Step title="Confirm">
-    Sign the transaction. Tokens arrive in your wallet as soon as it confirms, usually within a couple of seconds on Robinhood Chain.
+    Sign the transaction. Tokens arrive as soon as it confirms, usually within a second on Arc.
   </Step>
 </Steps>
 
+## Selling
+
+Selling needs a one-time router approval for the token (the app bundles it as tightly as it can, and EIP-2612 permit is supported). You'll see the exact USDC output quoted before you sign, protected by the same slippage controls.
+
 <Info>
-  **Buying near graduation:** if your buy is larger than the remaining curve supply, it fills exactly to the end of the curve and the unused ETH is automatically refunded in the same transaction. That final buy triggers graduation.
+  **The price floor:** no liquidity exists above a token's opening price, so a sell can never execute above it. If your sell would cross the floor, the quote caps there and tells you, rather than pretending a fill exists.
 </Info>
 
-## Selling on the curve
+## Trade anywhere
 
-Selling supports **EIP-2612 permit**, so you don't need a separate approval transaction: the app bundles your signed permit and the sell into a single transaction. You'll see the exact ETH output quoted before you sign, protected by the same slippage controls.
+You don't have to trade on veto.fun. The pool is a normal v3 pool on a major DEX, so wallets, aggregators, and bots that support Uniswap on Arc can trade it too. The app's own route (the Veto swap router) is simply the path that works from the token's very first second, before routing APIs have indexed the new pool.
 
 ## Fees at a glance
 
-| Stage | Fee | Where it goes |
+| Fee | Amount | Where it goes |
 | --- | --- | --- |
-| Bonding curve (buy & sell) | 1% in ETH | 0.7% protocol · 0.3% creator |
-| After graduation (Uniswap v3) | 1% pool fee tier | Accrues to the locked LP; split 30/70 creator/treasury |
+| Launchpad trading fee | **none** | — |
+| Pool swap fee | 1% | Accrues to the locked liquidity; split 30/70 creator/treasury |
+| Network gas | about $0.01, paid in USDC | Arc |
 
-Plus network gas on every transaction. Full details in [Fees](/protocol/fees).
+Full details in [Fees](/protocol/fees).
 
 ## Why a trade can fail
 
-- **Slippage exceeded.** The curve moved more than your tolerance; retry with a fresh quote.
-- **Deadline expired.** The transaction sat in the mempool too long (default deadline is 5 minutes).
-- **Curve closed.** The token graduated between your quote and your transaction; trade it on Uniswap instead.
-- **Insufficient ETH.** Remember to leave room for gas.
+- **Slippage exceeded.** The pool moved more than your tolerance; retry with a fresh quote.
+- **Sell capped at the floor.** Part of your sell would price above the opening price; sell less or wait for buys.
+- **Insufficient USDC.** Remember to leave a little room for gas; it comes out of the same balance.
 
 <Warning>
   Meme coins are extremely volatile and most go to zero. Never trade more than you can afford to lose. See the [Risk Disclosure](/legal/risk-disclosure).

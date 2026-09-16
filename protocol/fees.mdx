@@ -1,65 +1,40 @@
 ---
 title: "Fees"
-description: "Every fee on veto.fun, exactly: 0.001 ETH launches, 1% curve trades, and post-graduation Uniswap fee splits."
+description: "What veto.fun charges: a flat USDC creation fee, no launchpad fee on trades, and the pool's own swap fee (0.3% or 1%, the creator's choice) split between creator and protocol."
 icon: "coins"
 ---
 
-The whole fee schedule fits in one table. Everything below is enforced on-chain, not by policy.
+The fee model is short enough to fit in three sentences. Launching costs a **flat creation fee in USDC**. The launchpad takes **no fee on trades**. The only trading cost is the pool's own **Uniswap v3 swap fee — 0.3% or 1%, chosen by the creator at launch** — which accrues to the permanently locked liquidity position and is split between the token's creator and the protocol.
 
-## Summary
+Everything on Arc is denominated in USDC, gas included, so every number below is a dollar number.
 
-| Action | Fee |
+## Launching
+
+| Item | Cost |
 | --- | --- |
-| Launch a token | **0.001 ETH** flat, plus gas |
-| Buy or sell on the bonding curve | **1%** of the ETH amount |
-| Graduation / migration | **Free** (permissionless, gas only) |
-| Trade on Uniswap after graduation | **1%** pool fee tier (standard Uniswap mechanics) |
-| Claim creator or protocol fees | **Free** (gas only) |
+| Creation fee | Flat, in USDC (read live from `feeConfig()`; shown on the create page) |
+| Liquidity you must provide | 0 (the locked supply is the liquidity) |
+| Network gas | about $0.01 on Arc |
 
-## Bonding-curve trade fee: 1%
+The optional dev buy is not a fee: it's a normal first purchase at the public opening price, and the pool fee applies to it like any other swap.
 
-Taken in ETH on every buy and sell, and split:
+## Trading
 
-<CardGroup cols={2}>
-  <Card title="Protocol · 0.7%" icon="building-columns">
-    Accrues to the protocol treasury. Funds platform development and operations.
-  </Card>
-  <Card title="Creator · 0.3%" icon="user-star">
-    Accrues to the token creator's claimable balance. See [Creator Rewards](/guides/creator-rewards).
-  </Card>
-</CardGroup>
+Every swap in the pool pays the tier the creator picked at launch: **0.3%** (cheaper to trade) or **1%** (more revenue per trade). It is fixed for the life of the token and applies on every platform, not just veto.fun. That fee doesn't go to a market maker or to us off the top: it accrues to the pool's liquidity position, and the entire position belongs to the locked vault.
 
-Fees are **pull-based**: they accumulate in the launchpad contract and are paid out when claimed. Creator fees can be claimed by the fee recipient themselves or triggered by the platform's claimer service (which pays out to recipients in batches; the money always goes to the recipient, never to whoever triggers the claim). Protocol fees can only be claimed by the treasury.
+There are no deposit, withdrawal, account, or subscription fees of any kind, and no extra fee added by the Veto app or its swap router.
 
-<Info>
-  **A token's fee rates are frozen the moment it launches.** The platform maintains a global fee configuration (currently 0.7% + 0.3% = 1%), and each new token takes a permanent snapshot of it at creation. No one, not even the protocol owner, can change the fees of a token that already exists. The global configuration can be tuned for *future* launches, within hard caps baked into the contract: at most 5% total trade fee and at most 0.1 ETH creation fee.
-</Info>
+## Where the fee goes
 
-## After graduation: Uniswap v3 pool fees
-
-Graduated tokens trade in a Uniswap v3 pool with the **1% fee tier**. Those fees accrue to the pool's liquidity, which is the position locked in the FeeLocker vault. The token's fee recipient, the treasury, or the platform's claimer service can trigger a fee collection, which splits the harvest:
+The locked position's accumulated fees can be collected at any time (by the token's fee recipient, the treasury, or the platform's claimer service). Each harvest is split at the ratio snapshotted into the token at launch:
 
 | Recipient | Share |
 | --- | --- |
-| Token creator | 30% |
-| Protocol treasury | 70% |
+| Token creator (or the wallet they route it to) | 50% |
+| Protocol treasury | 50% |
 
-Like the trade fee, this split is snapshotted into the token at launch and can never change for that token afterwards: every migrated pool keeps paying out at the terms that were advertised on its launch day.
+The split is immutable per token: whatever terms a token launched with, its pool pays out at those terms forever. This is the protocol's entire revenue model. If tokens don't trade, nobody earns. The protocol's half can be routed in part to a separate fee wallet (used for $VETO buybacks); that only ever moves the protocol's own share.
 
-## $VETO buybacks
-
-**50% of all fees the launchpad generates are used to buy back [\$VETO](/introduction/veto-token)** on the open market. This applies across the fee schedule (protocol trade fees and the protocol's share of migrated Uniswap pool fees), so half of everything the platform earns flows back into the official token. See [The Veto Token](/introduction/veto-token) for details.
-
-## Gas
-
-Every transaction pays Robinhood Chain gas in ETH. As an Arbitrum Orbit L2, gas costs are typically a tiny fraction of a cent to a few cents. There are **no** deposit, withdrawal, account, or subscription fees of any kind.
-
-## Example: a 1 ETH buy
-
-```text
-You send:            1.000 ETH
-Fee (1%):            0.010 ETH   → 0.007 protocol · 0.003 creator
-Goes into the curve: 0.990 ETH   → priced by x·y=k, tokens to your wallet
-```
-
-The trading widget always shows the fee and your exact minimum receive amount before you sign.
+<Card title="Creator rewards" icon="hand-holding-dollar" href="/guides/creator-rewards">
+  How creators claim their share of pool fees, in USDC and tokens, any time.
+</Card>

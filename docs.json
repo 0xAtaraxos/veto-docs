@@ -1,12 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "veto.fun",
-  "description": "veto.fun is the meme coin launchpad on Robinhood Chain. Launch a token in seconds, trade it on a fair bonding curve, and graduate to Uniswap v3 with liquidity locked forever.",
+  "name": "Veto",
+  "description": "Veto (veto.fun) is the memecoin launchpad on Arc. Launch a token in one transaction, straight into a live Uniswap v3 pool with liquidity locked forever, and earn USDC on every trade.",
   "colors": {
-    "primary": "#F2A63A",
-    "light": "#FFC46B",
-    "dark": "#B9770F"
+    "primary": "#4A90FF",
+    "light": "#7AB0FF",
+    "dark": "#2F74E6"
   },
   "logo": {
     "light": "/logo/veto-mark-black.png",
@@ -31,7 +31,7 @@
   "footer": {
     "socials": {
       "website": "https://veto.fun",
-      "x": "https://x.com/VetoDotFun",
+      "x": "https://x.com/LaunchOnVeto",
       "telegram": "https://t.me/vetodotfun",
       "discord": "https://discord.gg/vetodotfun"
     }
@@ -48,7 +48,6 @@
               "index",
               "introduction/why",
               "introduction/how-it-works",
-              "introduction/veto-token",
               "introduction/official-links",
               "introduction/faq"
             ]
@@ -65,8 +64,8 @@
           {
             "group": "Protocol",
             "pages": [
-              "protocol/bonding-curve",
-              "protocol/graduation",
+              "protocol/direct-listing",
+              "protocol/venues",
               "protocol/fees",
               "protocol/security"
             ]
@@ -76,6 +75,7 @@
             "pages": [
               "developers/overview",
               "developers/sdk",
+              "developers/launch-integration",
               "developers/contracts"
             ]
           },

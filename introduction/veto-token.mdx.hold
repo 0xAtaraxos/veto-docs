@@ -24,7 +24,7 @@ icon: "star"
   </Card>
 </CardGroup>
 
-Full tokenomics and pool details will be published at launch.
+Full tokenomics and pool details will be published at launch, together with the contract address.
 
 ## Fair launch
 
@@ -38,13 +38,11 @@ Full tokenomics and pool details will be published at launch.
 
 ## Contract address
 
-The official \$VETO contract address on Robinhood Chain:
+The official \$VETO contract address will appear here at launch:
 
 ```text
-0xEA00C513918D5192dA740f69Bc8c3f71d2330D75
+Coming soon
 ```
-
-[View on Blockscout](https://robinhoodchain.blockscout.com/address/0xEA00C513918D5192dA740f69Bc8c3f71d2330D75)
 
 <Warning>
   **Verify before you trade.** Only trust the contract address published on this page, on [veto.fun](https://veto.fun), and on our official X and Discord. Scammers launch fake tokens around every anticipated launch. The team will never DM you first or ask for your seed phrase.

@@ -1,14 +1,18 @@
 ---
-title: "Contract Reference"
-description: "The veto.fun smart contracts (VetoDotFun, VetoCurveToken, and FeeLocker): functions, events, and errors."
+title: "Contract reference"
+description: "The veto.fun smart contracts (launchpad, token, fee locker and swap router): functions, events, and errors."
 icon: "file-contract"
 ---
 
-Three contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **VetoDotFun** address. Everything else is discoverable from it.
+Four contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **launchpad** and **swap router** addresses. Everything else (locker, treasury, quote token, position manager, factory) is discoverable from the launchpad.
+
+<Note>
+  Solidity names: `VetoDotFun` (launchpad), `VetoToken`, `VetoFeeLocker`, `VetoSwapRouter`. Source: [veto-contracts](https://github.com/0xAtaraxos/veto-contracts). Every `uint256` amount of the quote asset in this ABI is in **native USDC units (18 decimals)**; the contracts convert to the pool's 6-decimal ERC-20 view with `QUOTE_SCALE = 1e12`.
+</Note>
 
 ## VetoDotFun
 
-The singleton that combines the token factory, every bonding curve, the fee ledger, and the Uniswap v3 migrator.
+The singleton launchpad and registry. On Arc there is one venue, Uniswap v3 (`venue = 0`); the parameter is kept so the ABI stays explicit.
 
 ### Launching
 
@@ -17,78 +21,68 @@ function createToken(
     string calldata name,
     string calldata symbol,
     string calldata metadataURI,
-    uint256 minTokensOut
+    uint256 minTokensOut,
+    uint8 venue,          // 0 = Uniswap v3, the only venue on Arc
+    uint24 poolFee,       // 3000 (0.3%) or 10000 (1%): the swap fee every trade pays, fixed for life
+    address feeRecipient  // who is paid the creator fee share; address(0) = msg.sender
 ) external payable returns (address token);
 ```
 
-Deploys a `VetoCurveToken` and opens its curve. `msg.value` must cover the flat creation fee (read it from `feeConfig()`; currently 0.001 ETH); any ETH beyond it executes an optional dev buy at the public starting price, with `minTokensOut` protecting against front-running. The current global fee config is snapshotted into the token's `CurveState`; its fees never change afterwards. Emits `TokenCreated` (which carries the snapshot).
+One transaction does everything. It deploys a `VetoToken` (mining a CREATE2 salt so the token sorts above USDC), creates and initializes the USDC/token 1% pool at the global opening price (`startTick`, a constructor immutable), mints the entire 1B supply as a single-sided position spanning `[TICK_LOWER, startTick]` straight into the fee locker, and executes the optional dev buy before anyone else can reach the pool. Emits `TokenCreated` (and `DevBuy` if there was one).
 
-### Trading
+`msg.value` (native USDC, 18 decimals) must cover the flat creation fee (read it from `feeConfig()`); anything beyond it is the dev buy, with `minTokensOut` protecting it against front-running. The current global `creatorLpShareBps` is snapshotted into the token's record and never changes afterwards.
 
-```solidity
-function buy(address token, uint256 minTokensOut, uint256 deadline)
-    external payable returns (uint256 tokensOut);
+The venue is frozen into the token: a token lives on exactly one DEX, forever. And because no liquidity exists above `startTick`, the opening price is a permanent floor. See [direct listing](/protocol/direct-listing) and [venues](/protocol/venues).
 
-function buyExactTokens(address token, uint256 tokensOut, uint256 deadline)
-    external payable;  // refunds excess ETH
-
-function sell(address token, uint256 tokenAmount, uint256 minEthOut, uint256 deadline)
-    external returns (uint256 ethOut);  // requires prior approve
-
-function sellWithPermit(
-    address token, uint256 tokenAmount, uint256 minEthOut, uint256 deadline,
-    uint8 v, bytes32 r, bytes32 s
-) external returns (uint256 ethOut);   // single-tx sell via EIP-2612
-```
-
-A buy that exceeds the remaining curve supply fills to exactly the end, refunds the excess ETH, and sets `graduated = true`. Emits `Trade` on every fill and `Graduated` on the final one.
-
-### Views & quotes
+### Registry and views
 
 ```solidity
-function quoteBuy(address token, uint256 grossEthIn)
-    external view returns (uint256 tokensOut, uint256 fee, uint256 ethUsed);
-function quoteBuyExact(address token, uint256 tokensOut)
-    external view returns (uint256 ethNeeded, uint256 fee);
-function quoteSell(address token, uint256 tokenAmount)
-    external view returns (uint256 ethOut, uint256 fee);
-
-function currentPrice(address token) external view returns (uint256);      // wei per 1e18 tokens
-function curveProgressBps(address token) external view returns (uint256);  // 0–10000
+function tokenCount() external view returns (uint256);
 function getTokens(uint256 offset, uint256 limit) external view returns (address[] memory);
-function getCurveStates(address[] calldata tokens) external view returns (CurveState[] memory);
-function curves(address token) external view returns (CurveState memory);
+function tokens(address token) external view
+    returns (address creator, uint16 creatorLpShareBps, uint8 venue, address pool, uint256 positionId);
+function getTokenInfos(address[] calldata tokenList) external view returns (TokenInfo[] memory);
+function venueOf(address token) external view returns (uint8);
+function creatorLpShareBpsOf(address token) external view returns (uint256); // the token's snapshot
+function feeRecipientOf(address token) external view returns (address);
+function feeConfig() external view returns (uint16 creatorLpShareBps, uint96 creationFee); // GLOBAL, future launches
+function protocolFeesOwed() external view returns (uint256); // accrued creation fees
+function claimAuthority() external view returns (address);
 ```
 
-`CurveState` fields: `virtualEth`, `virtualToken`, `realTokensLeft`, `realEth`, `creator`, `graduated`, `migrated`, plus the launch-time fee snapshot `protocolFeeBps`, `creatorFeeBps`, `creatorLpShareBps` (uint16s, fixed for the token's lifetime).
+The registry is shared: launches on both venues sit in one list, in launch order. `getTokenInfos` batches whole listing pages into one call.
 
-### Migration
+### Launch geometry
 
 ```solidity
-function migrate(address token) external returns (address pool, uint256 tokenId);
+function startTick() external view returns (int24);            // 203200
+function startSqrtPriceX96() external view returns (uint160);  // exact sqrt price at startTick
+function TICK_LOWER() external view returns (int24);           // -887200
+function TICK_SPACING() external view returns (int24);         // 200
+function POOL_FEE() external view returns (uint24);            // 10000 (1%)
 ```
 
-Permissionless and parameter-free. Wraps the raised ETH, mints a full-range Uniswap v3 position (1% fee tier) at the final curve price, and locks the position NFT in the FeeLocker. Includes a bounded corrective swap to neutralize hostile pool pre-initialization. Leftover tokens burn to `0xdEaD`; leftover WETH accrues to protocol fees. Emits `Migrated`.
+Constructor immutables, identical for every launch. On Arc the opening price is set so every token opens at the same fixed USD FDV.
+
+### Venue discovery
+
+```solidity
+function lockerOf(uint8 venue) external view returns (address);
+function lockerFor(address token) external view returns (address); // the locker holding this token's position
+function positionManagerOf(uint8 venue) external view returns (address);
+function factoryOf(uint8 venue) external view returns (address);
+function weth() external view returns (address);
+function treasury() external view returns (address);
+```
 
 ### Fees
 
 ```solidity
-function claimCreatorFees(address token) external;              // fee recipient or claimAuthority
-function claimCreatorFeesBatch(address[] calldata tokens) external; // same gate; airdrops each token's fees to its own recipient
-function claimProtocolFees() external;                          // treasury only
 function setFeeRecipient(address token, address newRecipient) external; // current recipient only
-
-function creatorFeesOwed(address token) external view returns (uint256);
-function protocolFeesOwed() external view returns (uint256);
-function feeRecipientOf(address token) external view returns (address);
-function feeConfig() external view returns (uint16 protocolFeeBps, uint16 creatorFeeBps, uint16 creatorLpShareBps, uint96 creationFee); // GLOBAL config for future launches
-function creatorLpShareBpsOf(address token) external view returns (uint256); // the token's snapshot
-function claimAuthority() external view returns (address);
+function claimProtocolFees() external;                                  // treasury only; pays accrued creation fees
 ```
 
-**Fee model:** the global `feeConfig` is owner-tunable within hard caps (`MAX_TOTAL_FEE_BPS = 500`, `MAX_CREATION_FEE = 0.1 ether`), and `createToken` snapshots it into the token's `CurveState`. A token's fees are read from its snapshot on every trade and harvest; config changes apply to future launches only.
-
-**Claim gating:** payouts always go to the recorded recipient, but only the recipient itself or the `claimAuthority` (the platform's backend claimer, rotatable by the owner) may trigger creator claims; only the treasury may trigger protocol claims.
+**Fee model:** there is **no per-trade launchpad fee**. Creator and protocol revenue is the pool's own 1% swap fee accruing to the locked position, harvested through the FeeLocker (below) and split at the token's snapshotted `creatorLpShareBps` (5000 bps to the creator side under the Arc config). The launchpad itself only collects the flat creation fee. The global `feeConfig` is owner-tunable within a hard cap (`MAX_CREATION_FEE`), and applies to future launches only. See [fees](/protocol/fees).
 
 ### Owner surface (complete list)
 
@@ -96,70 +90,96 @@ function claimAuthority() external view returns (address);
 function setFeeConfig(FeeConfig calldata c) external;   // future launches only; hard-capped
 function setClaimAuthority(address a) external;         // rotate/disable the backend claimer
 function setTreasury(address newTreasury) external;
-function setLocker(address locker) external;            // one-time, already consumed at deployment
+function setLocker(uint8 venue, address locker_) external; // one-time per venue, consumed at deployment
 ```
 
-There is deliberately no withdraw, pause, upgrade, seize, or retroactive fee-change function.
+Ownership is two-step (`transferOwnership` / `acceptOwnership`). There is deliberately no withdraw, pause, upgrade, seize, or retroactive fee-change function. See [security](/protocol/security).
 
 ### Events
 
 ```solidity
-event TokenCreated(address indexed token, address indexed creator, string name, string symbol, string metadataURI,
-                   uint16 protocolFeeBps, uint16 creatorFeeBps, uint16 creatorLpShareBps); // fee snapshot included
-event Trade(address indexed token, address indexed trader, bool isBuy, uint256 ethGross, uint256 tokenAmount, uint256 fee, uint256 virtualEth, uint256 virtualToken);
-event Graduated(address indexed token, uint256 ethRaised);
-event Migrated(address indexed token, address pool, uint256 tokenId, uint256 ethAmount, uint256 tokenAmount);
-event FeeConfigSet(uint16 protocolFeeBps, uint16 creatorFeeBps, uint16 creatorLpShareBps, uint96 creationFee);
+event TokenCreated(address indexed token, address indexed creator, address indexed pool,
+                   uint256 positionId, string name, string symbol, string metadataURI,
+                   uint16 creatorLpShareBps, uint8 venue);
+event DevBuy(address indexed token, address indexed creator, uint256 ethIn, uint256 tokensOut);
+event FeeRecipientSet(address indexed token, address indexed recipient);
+event FeeConfigSet(uint16 creatorLpShareBps, uint96 creationFee);
+event LockerSet(address indexed locker, uint8 venue);
+event ProtocolFeesClaimed(address indexed treasury, uint256 amount);
+event TreasurySet(address indexed treasury);
 event ClaimAuthoritySet(address indexed authority);
 ```
 
+These are all launch-time and admin events. Trading happens on the pool, which the launchpad never sees; for trades, watch `Swap` on each token's pool (`TokenCreated.pool`).
+
 ### Custom errors
 
-`CurveClosed`, `CurveStillOpen`, `AlreadyMigrated`, `Expired`, `SlippageExceeded`, `UnknownToken`, `ZeroAmount`, `ZeroAddress`, `FeeTooHigh`, `NotFeeRecipient`, `NotTreasury`, `InsufficientCreationFee`, `LockerNotSet`, `LockerAlreadySet`, `EthTransferFailed`, `OnlyWeth`, `NotPool`
+`UnknownVenue`, `VenueWethMismatch`, `LockerVenueMismatch`, `BadStartTick`, `WrongOpeningTick`, `SaltNotFound`, `PositionConsumedWeth`, `InsufficientCreationFee`, `SlippageExceeded`, `UnknownToken`, `NotFeeRecipient`, `NotTreasury`, `NotPool`, `OnlyWeth`, `LockerNotSet`, `LockerAlreadySet`, `FeeTooHigh`, `EthTransferFailed`, `ZeroAddress`
 
-## VetoCurveToken
+## VetoToken
 
 The per-launch ERC-20, deployed by `createToken`:
 
 - OpenZeppelin `ERC20` + `ERC20Permit` (EIP-2612), 18 decimals
-- Fixed supply of 1,000,000,000 × 1e18, minted once to the launchpad
+- Fixed supply of 1,000,000,000 × 1e18, minted once at launch and placed entirely into the locked position
 - `metadataURI()`: immutable token metadata pointer (e.g. `ipfs://…`)
 - **No** owner, mint, burn-by-admin, pause, blacklist, or fee-on-transfer
 
-## FeeLocker
+## VetoFeeLocker
 
-The immutable, ownerless vault for graduated liquidity:
-
-```solidity
-function positionOf(address token) external view returns (uint256 tokenId); // 0 = not migrated
-function collectFees(address token) external;  // fee recipient, treasury, or claimAuthority only
-```
-
-The locker has no function that can transfer a position out; locked liquidity is permanent by construction. Each harvest is split creator/treasury at the token's launch-time snapshot, read live from the launchpad's `creatorLpShareBpsOf(token)` (30/70 under the current config). One call always pays both parties; Uniswap collects the whole position at once.
-
-## Curve constants
+One per venue, byte-identical: an immutable, ownerless vault holding every launch's LP position forever. Both lockers read their fee config back from the launchpad, so the two share one treasury and one claim authority.
 
 ```solidity
-uint256 constant TOTAL_SUPPLY    = 1_000_000_000e18;
-uint256 constant VIRTUAL_TOKEN_0 = 1_073_000_000e18;
-uint256 constant SALE_SUPPLY     =   793_100_000e18;
-uint256 constant POOL_SUPPLY     = TOTAL_SUPPLY - SALE_SUPPLY; // 206_900_000e18
-// virtualEth0: immutable constructor parameter (1.6 ETH at launch)
-uint24  constant POOL_FEE   = 10000;    // Uniswap v3 1% tier
-int24   TICK_LOWER/UPPER    = ±887200;  // full range
-uint256 constant MAX_TOTAL_FEE_BPS = 500;      // hard cap on the tunable trade fee
-uint256 constant MAX_CREATION_FEE  = 0.1 ether; // hard cap on the tunable creation fee
+function positionOf(address token) external view returns (uint256 tokenId); // 0 = not launched here
+function collectFees(address token) external returns (uint256 amount0, uint256 amount1);
+    // fee recipient, treasury, or claimAuthority only
 ```
 
-All rounding favors the pool (`Math.ceilDiv` on reserve division) so the invariant `k` never decreases.
+The locker has no function that can transfer a position out; locked liquidity is permanent by construction. Each harvest collects the whole position's accrued 1% swap fees at once and splits them creator/treasury at the token's launch-time snapshot, read live from the launchpad's `creatorLpShareBpsOf(token)` (50/50 under the Arc config). One call always pays both parties. Emits `FeesCollected` per harvest and `PositionLocked` at launch.
+
+## VetoSwapRouter
+
+Routing APIs do not know about a pool that is seconds old, which is exactly when a launchpad needs trading to work. The swap router swaps directly against the pool with its own callback: live the instant the pool exists, native USDC in and out. It is stateless, ownerless, and immutable, and it only swaps against a pool it re-derived from a known factory, so a hostile address can't be passed off as a pool.
+
+```solidity
+function buy(address pool, uint256 minTokensOut, uint256 deadline)
+    external payable returns (uint256 tokensOut);    // msg.value = USDC in (native units)
+
+function sell(address pool, uint256 tokenAmount, uint256 minEthOut, uint256 deadline)
+    external returns (uint256 ethOut);               // requires prior approve of the router
+
+event Swap(address indexed pool, address indexed trader, bool indexed isBuy,
+           uint256 amountIn, uint256 amountOut);
+```
+
+Errors: `UnknownPool`, `NotWethPool`, `Expired`, `SlippageExceeded`, `ZeroAmount`, `NotPool`, `OnlyWeth`, `EthTransferFailed`, `ZeroAddress`
+
+The router's `Swap` event is trader-indexed, which makes per-wallet activity scans cheap. It only covers trades routed through Veto; the pool's own `Swap` event is the complete record.
+
+## Launch constants
+
+```solidity
+uint256 constant TOTAL_SUPPLY = 1_000_000_000e18;  // per token, 100% into the locked position
+uint24  POOL_FEE_LOW  = 3000;    // 0.3% tier, spacing 60, tickLower -887220
+uint24  POOL_FEE_HIGH = 10000;   // 1% tier,   spacing 200, tickLower -887200
+int24   TICK_SPACING = 200;
+int24   TICK_LOWER   = -887200;  // bottom of the locked position
+int24   startTick;               // constructor immutable: the fixed USD opening FDV
+uint256 constant MAX_CREATION_FEE;              // hard cap on the tunable creation fee
+uint8   VENUE_UNISWAP = 0;
+```
 
 ## Deployed addresses
 
-Live on Robinhood Chain mainnet (4663) since block 12,262,096, source-verified on Blockscout:
+<Warning>
+  The Arc deployment is in progress. Addresses will be published here, on [explorer.arc.io](https://explorer.arc.io) (source-verified) and in `@vetodotfun/sdk`'s `deployments.arc` the moment they are live.
+</Warning>
 
-| Contract | Address |
+| Contract | Arc mainnet (5042) |
 | --- | --- |
-| VetoDotFun | [`0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885`](https://robinhoodchain.blockscout.com/address/0x40D81280068f6f6Db5FD2fe29979dC9CDAFcE885) |
-| FeeLocker | [`0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1`](https://robinhoodchain.blockscout.com/address/0x44384B3D7FF17D7E0C0114221dcF6C5a888433e1) |
+| Launchpad | pending |
+| FeeLocker | pending |
+| SwapRouter | pending |
+| Treasury / owner | pending |
 
-See [Developer Overview](/developers/overview) for the canonical Uniswap and WETH addresses the protocol builds on.
+See [developer overview](/developers/overview) for chain details and the architecture diagram.

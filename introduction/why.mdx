@@ -5,7 +5,7 @@ description: "The honest answer to the only fair question: why does the world ne
 icon: "hammer"
 ---
 
-Let's be honest about the category. Since pump.fun proved the bonding curve could bootstrap an idea from nothing, launchpads have multiplied faster than the tokens on them. The mechanism is a commodity now. Anyone can spin one up in a weekend, and most of them differ in logo only.
+Let's be honest about the category. Since pump.fun proved a launchpad could bootstrap an idea from nothing, launchpads have multiplied faster than the tokens on them. The mechanism is a commodity now. Anyone can spin one up in a weekend, and most of them differ in logo only.
 
 So why build *another* one?
 
@@ -17,6 +17,7 @@ We kept watching the same movie. A launchpad promises fair launches, and the pro
 - Liquidity "locked" for 90 days, which is just a rug with a calendar.
 - Fee terms that quietly change after your token is already live.
 - Insider allocations dressed up as "ecosystem funds".
+- A walled-garden phase where the token only exists on the launchpad's own site, invisible to the rest of the market.
 
 None of that is a bug in those platforms. It's what happens when fairness is a policy instead of a property.
 
@@ -24,29 +25,26 @@ None of that is a bug in those platforms. It's what happens when fairness is a p
 
 Veto's answer is to remove the trust from the equation entirely. Not "we won't", but **"we can't"**:
 
-- **One curve for every token.** The creator buys at the same price as you. There is no function for presales or team allocations, so there are no presales or team allocations.
-- **Fee terms frozen at launch.** Every token snapshots its fee config the moment it's created. Nobody, including the protocol owner, can change an existing token's terms. Ever.
-- **Liquidity locked forever.** At graduation the Uniswap v3 position is minted straight into a vault with no withdrawal function. Not timelocked. Gone, permanently, for everyone including us.
+- **Every launch opens identically.** Same opening price, same locked-supply pool, for every token including anything we launch. There is no function for presales or team allocations, so there are no presales or team allocations.
+- **Liquidity locked forever, from block one.** The entire supply is minted as liquidity straight into a vault with no withdrawal function. Not timelocked. Gone, permanently, for everyone including us.
+- **Fee terms frozen at launch.** Every token snapshots its fee split the moment it's created. Nobody, including the protocol owner, can change an existing token's terms. Ever.
+- **No walled garden.** Tokens list directly on Uniswap v3, so every wallet, aggregator, and charting platform on the chain can see and trade them from the first swap. We compete on the app, not on locking your token into it.
 
 The full list of what can never happen is in the [security model](/protocol/security). It's a short read because the admin surface is nearly empty, and that's the point.
 
 ## Because every chain gets one shot at this
 
-Robinhood Chain is new: an Arbitrum Orbit L2 with ETH gas, fast blocks, and no incumbent. Every chain gets one defining launchpad, and it's decided early. We built Veto natively for this chain, from the contracts up, to be that.
-
-## And because we eat our own cooking
-
-**50% of every fee the launchpad earns buys back [$VETO](/introduction/veto-token) on the open market.** The protocol doesn't extract from the ecosystem and leave; half of everything flows back in. The token wins exactly when the platform does.
+Arc is new: Circle's USDC-native Layer 1 with BlackRock, DTCC and Visa running its validators, sub-second finality, and no incumbent. Every chain gets one defining launchpad, and it's decided early. We built Veto natively for this chain, from the contracts up: the first launchpad where every price, fee and creator reward is a dollar amount because the chain itself runs on USDC.
 
 ---
 
-**You hold the veto. The market decides the rest.**
+**You hold the keys. The market decides the rest.**
 
 <CardGroup cols={2}>
   <Card title="How it works" icon="diagram-project" href="/introduction/how-it-works">
-    Launch, curve, graduation, locked liquidity. The whole lifecycle in one page.
+    One transaction: token, pool, locked liquidity. The whole story in one page.
   </Card>
   <Card title="Launch a token" icon="rocket" href="/guides/launch-a-token">
-    0.001 ETH and one transaction. See you in the trenches.
+    One flat USDC fee and one transaction. See you in the trenches.
   </Card>
 </CardGroup>

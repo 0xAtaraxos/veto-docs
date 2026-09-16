@@ -1,50 +1,34 @@
 ---
 title: "How veto.fun Works"
 sidebarTitle: "How It Works"
-description: "The full lifecycle of a token on veto.fun: from launch, through bonding-curve trading, to graduation into a locked Uniswap v3 pool."
+description: "The full life of a token on veto.fun: one transaction lists it on Uniswap v3 with its liquidity locked forever."
 icon: "diagram-project"
 ---
 
-Every token on veto.fun lives the same on-chain life. No special cases, no admin shortcuts, no "trust us". The rules below are enforced by the contracts for every launch, including ours.
+Every token on veto.fun lives the same on-chain life. No special cases, no admin shortcuts, no "trust us". And that life has exactly one phase: **launched**. There is no bonding curve to fill, no graduation to wait for, no migration that can fail.
 
-## Stage 1: Launch
+## Launch: one transaction, everything
 
-A creator calls the launchpad with a **name**, **ticker**, and **metadata URI** (image and description, pinned to IPFS). One transaction deploys the token and opens its bonding curve.
+A creator calls the launchpad with a **name**, **ticker**, and **metadata URI** (image and description, pinned to IPFS), picks a venue, and confirms. One transaction:
 
-- **Supply:** exactly 1,000,000,000 tokens (18 decimals), minted once. The token has no owner, no mint function, no pause, no blacklist, and no transfer fees.
-- **Creation fee:** a flat 0.001 ETH, plus network gas.
-- **Optional dev buy:** the creator can attach ETH to the launch transaction to make the very first buy, at the same public starting price as everyone else. The creator receives **zero** free tokens.
+- Deploys the token: exactly 1,000,000,000 tokens (18 decimals), minted once. No owner, no mint function, no pause, no blacklist, no transfer fees.
+- Opens a **USDC/token pool on Uniswap v3** at the fixed opening price every launch shares: the same USD FDV for every token.
+- Locks **the entire supply** as a single liquidity position in an immutable vault. Nobody can ever withdraw it; it earns the pool's 1% swap fees instead.
+- Optionally executes the creator's **dev buy** at the public price, before anyone else can trade.
 
-## Stage 2: Bonding-curve trading
+Cost: a flat **USDC creation fee** plus about $0.01 of gas. The creator receives **zero** free tokens.
 
-793,100,000 tokens (79.31% of supply) are sold on a **constant-product bonding curve** (`x · y = k` over virtual reserves). The price is purely a function of curve state:
+## Trading: a real DEX pool, from block one
 
-- Every **buy** pushes the price up; every **sell** pushes it down. It's deterministic, with no order book and no market maker.
-- A **1% fee** is taken in ETH on every trade: 0.7% to the protocol, 0.3% to the token's creator. See [Fees](/protocol/fees).
-- Quotes are exact: what the contract quotes is what you get, protected by slippage limits and deadlines you set.
+The token trades like any other v3 token because it is one:
 
-The trading widget on each token page shows the live price, the curve progress bar, and the amount of ETH still needed to graduate.
+- Trade it on veto.fun (exact quotes, USDC in and out, slippage protection), or through any wallet, aggregator, or bot that supports Uniswap on Arc.
+- Charting and discovery platforms index the pool from its first swap. Your token is born visible to the whole ecosystem, not parked in a walled garden.
+- **The opening price is a permanent floor**: no liquidity exists above it, so sells alone can never push the price above the launch price, and the pool always holds the USDC buyers put in.
 
-## Stage 3: Graduation
+## Earning: the trading fee works for creator and protocol
 
-When the buy that empties the 793.1M curve allocation lands, the curve **graduates**:
-
-- The final buy is partially filled to exactly the remaining supply, and any excess ETH is refunded automatically.
-- The curve freezes permanently. No more curve trades, and it can never reopen.
-
-Anyone can then trigger the **migration** (it's permissionless and free): the raised ETH is paired with the reserved 206,900,000 tokens (20.69% of supply) to create a full-range **Uniswap v3** pool at the final curve price, so there is no price gap between the curve and the pool.
-
-<Info>
-  The Uniswap v3 LP position is minted directly into an immutable **FeeLocker** vault with no withdrawal function. The liquidity is locked forever and can never be pulled by the creator, the team, or anyone else. Only the accumulated swap **fees** can be collected. See [Graduation](/protocol/graduation).
-</Info>
-
-## Stage 4: Life after graduation
-
-The token is now a plain ERC-20 with a live Uniswap v3 pool on Robinhood Chain:
-
-- Tradable by any wallet, aggregator, or trading bot, not just on veto.fun.
-- Uniswap swap fees accumulate to the locked LP position and are split **30/70** between the creator and the protocol treasury (the same ratio as curve fees), claimable at any time.
-- The token contract itself never changes: same address, same fixed supply, no admin keys.
+Every swap pays the pool's fee (0.3% or 1%, the creator's choice at launch) into the locked position. Anyone entitled can trigger a harvest at any time, and it splits at the ratio snapshotted into the token at launch: **50% to the creator (or the wallet they route it to), 50% to the protocol treasury**, forever. That's the whole business model, and it only pays when tokens actually trade. See [Fees](/protocol/fees).
 
 ## What can never happen
 
@@ -52,10 +36,11 @@ The token is now a plain ERC-20 with a live Uniswap v3 pool on Robinhood Chain:
 | --- | --- |
 | Creator or team mints extra supply | ❌ No mint function exists |
 | Trading gets paused or wallets blacklisted | ❌ No pause or blacklist exists |
-| Liquidity gets pulled after graduation | ❌ LP is locked in an ownerless vault |
-| Curve parameters change mid-flight | ❌ Fixed at launch |
+| Liquidity gets pulled | ❌ Locked in an ownerless vault with no withdrawal function |
+| Sells dump the price below the launch price | ❌ No liquidity exists above the opening tick |
+| A token's fee terms change after launch | ❌ Snapshotted at creation, immutable |
 | Platform touches your funds | ❌ Fully non-custodial |
 
-<Card title="Deep dive: the bonding curve math" icon="function" href="/protocol/bonding-curve">
-  Exact reserves, formulas, and graduation numbers.
+<Card title="Deep dive: the direct listing" icon="rocket" href="/protocol/direct-listing">
+  Exact launch geometry, the price floor, and the dev buy.
 </Card>
