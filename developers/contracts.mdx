@@ -7,10 +7,10 @@ icon: "file-contract"
 Four contracts (Solidity 0.8.30, OpenZeppelin-based) run the entire protocol. Integrators only need the **launchpad** and **swap router** addresses. Everything else (locker, treasury, quote token, position manager, factory) is discoverable from the launchpad.
 
 <Note>
-  This reference describes the current contract generation, which is being ported to Arc (USDC quote token instead of WETH, a single Uniswap venue, a `feeRecipient` parameter on `createToken`, 50% creator share). Contract names below are the Solidity names (`MakiDotFun`, `MakiToken`, `MakiFeeLocker`, `MakiSwapRouter`); they will be confirmed together with the Arc addresses.
+  Solidity names: `VetoDotFun` (launchpad), `VetoToken`, `VetoFeeLocker`, `VetoSwapRouter`. Source: [veto-contracts](https://github.com/0xAtaraxos/veto-contracts). Every `uint256` amount of the quote asset in this ABI is in **native USDC units (18 decimals)**; the contracts convert to the pool's 6-decimal ERC-20 view with `QUOTE_SCALE = 1e12`.
 </Note>
 
-## MakiDotFun
+## VetoDotFun
 
 The singleton launchpad and registry. On Arc there is one venue, Uniswap v3 (`venue = 0`); the parameter is kept so the ABI stays explicit.
 
@@ -22,11 +22,12 @@ function createToken(
     string calldata symbol,
     string calldata metadataURI,
     uint256 minTokensOut,
-    uint8 venue
+    uint8 venue,          // 0 = Uniswap v3, the only venue on Arc
+    address feeRecipient  // who is paid the creator fee share; address(0) = msg.sender
 ) external payable returns (address token);
 ```
 
-One transaction does everything. It deploys a `MakiToken` (mining a CREATE2 salt so the token sorts above USDC), creates and initializes the USDC/token 1% pool at the global opening price (`startTick`, a constructor immutable), mints the entire 1B supply as a single-sided position spanning `[TICK_LOWER, startTick]` straight into the fee locker, and executes the optional dev buy before anyone else can reach the pool. Emits `TokenCreated` (and `DevBuy` if there was one).
+One transaction does everything. It deploys a `VetoToken` (mining a CREATE2 salt so the token sorts above USDC), creates and initializes the USDC/token 1% pool at the global opening price (`startTick`, a constructor immutable), mints the entire 1B supply as a single-sided position spanning `[TICK_LOWER, startTick]` straight into the fee locker, and executes the optional dev buy before anyone else can reach the pool. Emits `TokenCreated` (and `DevBuy` if there was one).
 
 `msg.value` (native USDC, 18 decimals) must cover the flat creation fee (read it from `feeConfig()`); anything beyond it is the dev buy, with `minTokensOut` protecting it against front-running. The current global `creatorLpShareBps` is snapshotted into the token's record and never changes afterwards.
 
@@ -114,7 +115,7 @@ These are all launch-time and admin events. Trading happens on the pool, which t
 
 `UnknownVenue`, `VenueWethMismatch`, `LockerVenueMismatch`, `BadStartTick`, `WrongOpeningTick`, `SaltNotFound`, `PositionConsumedWeth`, `InsufficientCreationFee`, `SlippageExceeded`, `UnknownToken`, `NotFeeRecipient`, `NotTreasury`, `NotPool`, `OnlyWeth`, `LockerNotSet`, `LockerAlreadySet`, `FeeTooHigh`, `EthTransferFailed`, `ZeroAddress`
 
-## MakiToken
+## VetoToken
 
 The per-launch ERC-20, deployed by `createToken`:
 
@@ -123,7 +124,7 @@ The per-launch ERC-20, deployed by `createToken`:
 - `metadataURI()`: immutable token metadata pointer (e.g. `ipfs://…`)
 - **No** owner, mint, burn-by-admin, pause, blacklist, or fee-on-transfer
 
-## MakiFeeLocker
+## VetoFeeLocker
 
 One per venue, byte-identical: an immutable, ownerless vault holding every launch's LP position forever. Both lockers read their fee config back from the launchpad, so the two share one treasury and one claim authority.
 
@@ -135,7 +136,7 @@ function collectFees(address token) external returns (uint256 amount0, uint256 a
 
 The locker has no function that can transfer a position out; locked liquidity is permanent by construction. Each harvest collects the whole position's accrued 1% swap fees at once and splits them creator/treasury at the token's launch-time snapshot, read live from the launchpad's `creatorLpShareBpsOf(token)` (50/50 under the Arc config). One call always pays both parties. Emits `FeesCollected` per harvest and `PositionLocked` at launch.
 
-## MakiSwapRouter
+## VetoSwapRouter
 
 Routing APIs do not know about a pool that is seconds old, which is exactly when a launchpad needs trading to work. The swap router swaps directly against the pool with its own callback: live the instant the pool exists, native USDC in and out. It is stateless, ownerless, and immutable, and it only swaps against a pool it re-derived from a known factory, so a hostile address can't be passed off as a pool.
 

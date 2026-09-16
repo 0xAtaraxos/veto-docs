@@ -44,7 +44,7 @@ Fee claims are permission-gated to their own beneficiaries: creator fees can be 
 
 - **The opening price is a permanent floor.** No liquidity exists above the opening tick, so sells alone can never push a price above the launch price, and the pool always holds exactly the USDC buyers put in.
 - v3 rounding always favors the pool.
-- The swap router the app uses (MakiSwapRouter) is stateless, ownerless, and immutable; it holds no funds between transactions and only swaps against pools re-derived from a known factory. Your slippage limit is enforced on-chain.
+- The swap router the app uses (VetoSwapRouter) is stateless, ownerless, and immutable; it holds no funds between transactions and only swaps against pools re-derived from a known factory. Your slippage limit is enforced on-chain.
 - These invariants are covered by unit tests and fork tests that assert live fills match the SDK's quotes to the wei, on both venues.
 
 ## Audit status

@@ -69,6 +69,7 @@ npm install @vetodotfun/sdk viem
       venue: Venue.UNISWAP,
       devBuyEth: devBuy,
       minTokensOut: minAfterSlippage(q.tokensOut, 100),
+      feeRecipient: "0xRecipient…", // optional: who is paid the creator fee share (default: the creator)
     });
     ```
 
@@ -76,17 +77,13 @@ npm install @vetodotfun/sdk viem
   </Step>
 
   <Step title="Route the creator fee stream (optional)">
-    By default the creator's share of pool fees is paid to the launching wallet. To pay a different wallet — a team multisig, a partner, your own platform — redirect it right after launch:
+    By default the creator's share of pool fees is paid to the launching wallet. Pass `feeRecipient` at launch to pay a different wallet — a team multisig, a partner, your own platform — in the same transaction. The current recipient can move the stream again later:
 
     ```ts
-    await veto.write.setFeeRecipient(token, "0xRecipient…");
+    await veto.write.setFeeRecipient(token, "0xNewRecipient…");
     ```
 
-    Only the current recipient can call this, and it moves the **whole** creator share. veto.fun tracks `FeeRecipientSet` and shows the recipient wallet the token in its studio, so whoever you route to can claim without any help from you.
-
-    <Note>
-      A `feeRecipient` parameter on `createToken` itself (one transaction) ships with the Arc contract generation; until then it is this second call.
-    </Note>
+    It always moves the **whole** creator share. veto.fun tracks `FeeRecipientSet` and shows the recipient wallet the token in its studio, so whoever you route to can claim without any help from you.
   </Step>
 
   <Step title="Show the result">

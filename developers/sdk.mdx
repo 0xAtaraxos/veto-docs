@@ -83,6 +83,7 @@ const { token, pool, venue, positionId, devBuyTokensOut } = await veto.write.lau
   metadataURI: "ipfs://Qm…",       // image + description, pinned to IPFS
   venue: Venue.UNISWAP,
   devBuyEth: parseEther("25"),     // optional first buy (25 USDC), before the public
+  feeRecipient: "0xTeam…",         // optional: who gets the creator fee share (default: you)
 });
 ```
 
@@ -255,10 +256,10 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
 
 <AccordionGroup>
   <Accordion title="veto.read: all methods">
-    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens(pageSize?)`, `getTokenRecord(token)`, `getTokenRecords(tokens[])`, `venueOf(token)`, `getFees()`, `launchGeometry()`, `claimAuthority()`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `creatorLpShareBpsOf(token)`, `lockerOf(venue)`, `lockerFor(token)`, `positionManagerOf(venue)`, `factoryOf(venue)`, `venueInfo(venue)`, `venues()`, `treasury()`, `owner()`, `weth()`, `getTokenMetadata(token)`, `balanceOf(token, account)`, `swapAllowance(token, owner)`, `getPool(token, venue?)`, `getPoolState(pool)`, `positionOf(token)`
+    `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens(pageSize?)`, `getTokenRecord(token)`, `getTokenRecords(tokens[])`, `venueOf(token)`, `getFees()`, `launchGeometry()`, `claimAuthority()`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `creatorLpShareBpsOf(token)`, `lockerOf(venue)`, `lockerFor(token)`, `positionManagerOf(venue)`, `factoryOf(venue)`, `venueInfo(venue)`, `venues()`, `treasury()`, `owner()`, `quote()`, `getTokenMetadata(token)`, `balanceOf(token, account)`, `swapAllowance(token, owner)`, `getPool(token, venue?)`, `getPoolState(pool)`, `positionOf(token)`
   </Accordion>
   <Accordion title="veto.write: all methods">
-    `launch({ name, symbol, metadataURI, venue, devBuyEth?, minTokensOut? })` (`devBuyEth` is USDC in native units), `createToken(sameParams)`, `buy(pool, ethIn, quotedTokensOut, opts?)`, `sell(pool, tokenAmount, quotedEthOut, opts?)`, `approveRouter(token, amount)`, `approve(token, spender, amount)`, `collectFees(token)`, `setFeeRecipient(token, newRecipient)`, `claimProtocolFees()`, `signPermit({ token, spender, value, deadline? })`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
+    `launch({ name, symbol, metadataURI, venue, devBuyEth?, minTokensOut?, feeRecipient? })` (`devBuyEth` is USDC in native units), `createToken(sameParams)`, `buy(pool, ethIn, quotedTokensOut, opts?)`, `sell(pool, tokenAmount, quotedEthOut, opts?)`, `approveRouter(token, amount)`, `approve(token, spender, amount)`, `collectFees(token)`, `setFeeRecipient(token, newRecipient)`, `claimProtocolFees()`, `signPermit({ token, spender, value, deadline? })`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
     `quoteBuy(state, ethIn, fee?)`, `quoteBuyExact(state, tokensOut, fee?)`, `quoteSell(state, tokensIn, fee?, startSqrtPriceX96?)`, `tokensPerEth(sqrtPriceX96)`, `priceInWei(sqrtPriceX96)`, `fdvWei(sqrtPriceX96)`, `tokensRemaining(state)`, `soldProgressBps(state, startSqrtPriceX96?)`, `minAfterSlippage(quoted, slippageBps)`, `getSqrtRatioAtTick(tick)`, `openingPoolState(startSqrtPriceX96?, totalSupply?)`. Plus constants `TOTAL_SUPPLY`, `POOL_FEE`, `TICK_SPACING`, `TICK_LOWER`, `START_TICK`, `START_SQRT_PRICE_X96`, `SQRT_PRICE_LOWER_X96`, `MIN_TICK`, `MAX_TICK`, `BPS`
