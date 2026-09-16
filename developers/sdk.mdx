@@ -75,13 +75,14 @@ One transaction deploys the ERC-20, opens the USDC/token 1% pool at the global o
 The token address is not knowable in advance (the CREATE2 salt is mined on-chain so the token sorts above USDC), so `launch` waits for the receipt and decodes it for you:
 
 ```ts
-import { Venue } from "@vetodotfun/sdk";
+import { Venue, POOL_FEES } from "@vetodotfun/sdk";
 
-const { token, pool, venue, positionId, devBuyTokensOut } = await veto.write.launch({
+const { token, pool, venue, poolFee, positionId, devBuyTokensOut } = await veto.write.launch({
   name: "Veto Star",
   symbol: "VETO",
   metadataURI: "ipfs://Qm…",       // image + description, pinned to IPFS
   venue: Venue.UNISWAP,
+  poolFee: POOL_FEES.HIGH,         // 1% (default) or POOL_FEES.LOW (0.3%): the swap fee every trade pays, forever
   devBuyEth: parseEther("25"),     // optional first buy (25 USDC), before the public
   feeRecipient: "0xTeam…",         // optional: who gets the creator fee share (default: you)
 });
@@ -259,7 +260,7 @@ Writes simulate first, so contract reverts surface as decoded errors before gas 
     `tokenCount()`, `getTokens(offset, limit)`, `getAllTokens(pageSize?)`, `getTokenRecord(token)`, `getTokenRecords(tokens[])`, `venueOf(token)`, `getFees()`, `launchGeometry()`, `claimAuthority()`, `protocolFeesOwed()`, `feeRecipientOf(token)`, `creatorLpShareBpsOf(token)`, `lockerOf(venue)`, `lockerFor(token)`, `positionManagerOf(venue)`, `factoryOf(venue)`, `venueInfo(venue)`, `venues()`, `treasury()`, `owner()`, `quote()`, `getTokenMetadata(token)`, `balanceOf(token, account)`, `swapAllowance(token, owner)`, `getPool(token, venue?)`, `getPoolState(pool)`, `positionOf(token)`
   </Accordion>
   <Accordion title="veto.write: all methods">
-    `launch({ name, symbol, metadataURI, venue, devBuyEth?, minTokensOut?, feeRecipient? })` (`devBuyEth` is USDC in native units), `createToken(sameParams)`, `buy(pool, ethIn, quotedTokensOut, opts?)`, `sell(pool, tokenAmount, quotedEthOut, opts?)`, `approveRouter(token, amount)`, `approve(token, spender, amount)`, `collectFees(token)`, `setFeeRecipient(token, newRecipient)`, `claimProtocolFees()`, `signPermit({ token, spender, value, deadline? })`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
+    `launch({ name, symbol, metadataURI, venue, poolFee?, devBuyEth?, minTokensOut?, feeRecipient? })` (`devBuyEth` is USDC in native units), `createToken(sameParams)`, `buy(pool, ethIn, quotedTokensOut, opts?)`, `sell(pool, tokenAmount, quotedEthOut, opts?)`, `approveRouter(token, amount)`, `approve(token, spender, amount)`, `collectFees(token)`, `setFeeRecipient(token, newRecipient)`, `claimProtocolFees()`, `signPermit({ token, spender, value, deadline? })`. Trade `opts`: `{ slippageBps?: number; deadline?: bigint }`
   </Accordion>
   <Accordion title="Standalone math exports">
     `quoteBuy(state, ethIn, fee?)`, `quoteBuyExact(state, tokensOut, fee?)`, `quoteSell(state, tokensIn, fee?, startSqrtPriceX96?)`, `tokensPerEth(sqrtPriceX96)`, `priceInWei(sqrtPriceX96)`, `fdvWei(sqrtPriceX96)`, `tokensRemaining(state)`, `soldProgressBps(state, startSqrtPriceX96?)`, `minAfterSlippage(quoted, slippageBps)`, `getSqrtRatioAtTick(tick)`, `openingPoolState(startSqrtPriceX96?, totalSupply?)`. Plus constants `TOTAL_SUPPLY`, `POOL_FEE`, `TICK_SPACING`, `TICK_LOWER`, `START_TICK`, `START_SQRT_PRICE_X96`, `SQRT_PRICE_LOWER_X96`, `MIN_TICK`, `MAX_TICK`, `BPS`

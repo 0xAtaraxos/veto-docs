@@ -23,6 +23,7 @@ function createToken(
     string calldata metadataURI,
     uint256 minTokensOut,
     uint8 venue,          // 0 = Uniswap v3, the only venue on Arc
+    uint24 poolFee,       // 3000 (0.3%) or 10000 (1%): the swap fee every trade pays, fixed for life
     address feeRecipient  // who is paid the creator fee share; address(0) = msg.sender
 ) external payable returns (address token);
 ```
